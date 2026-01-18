@@ -174,8 +174,10 @@
     <script type="module">
         import { MiniKit } from 'https://cdn.jsdelivr.net/npm/@worldcoin/minikit-js@latest/+esm';
 
-        // --- ตั้งค่า Wallet ---
-        const MY_WALLET_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE"; // อย่าลืมใส่ Wallet Address จริงของคุณ
+        // --- ตั้งค่า App Config ---
+        const MY_WALLET_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE"; // <--- ⚠️ แก้เป็นเลขกระเป๋าของคุณก่อนนะครับ!
+        const APP_ID = "app_7a67630a2166eba727b9b283105535"; // ดึงจากรูปที่คุณส่งมา
+        const ACTION_ID = "join-game"; // ดึงจากรูป (Identifier)
 
         let currentPlayerName = "GUEST";
         let players = [];
@@ -191,6 +193,9 @@
 
         // --- Init ---
         function initMiniKit() {
+            // ติดตั้ง MiniKit พร้อม App ID
+            MiniKit.install({ appId: APP_ID });
+            
             if (MiniKit.isInstalled()) {
                 console.log("World App Detected");
                 document.getElementById('statusMsg').textContent = "✅ Connected to World App";
@@ -247,11 +252,10 @@
 
             // 1. ตรวจสอบการยืนยันตัวตน (Verify)
             if (MiniKit.isInstalled()) {
-                // เรียกคำสั่ง Verify (ต้องสร้าง Action ใน Developer Portal ก่อนถึงจะใช้ได้จริง)
-                // ชื่อ action 'enter-lobby' เป็นตัวอย่าง
                 try {
+                    // เรียกคำสั่ง Verify โดยใช้ Action ที่ถูกต้องจากรูปภาพ
                     const res = await MiniKit.commands.verify({
-                        action: "enter-lobby", 
+                        action: ACTION_ID,  // ใช้ "join-game" ตามที่ตั้งค่าในเว็บ
                         signal: currentPlayerName, 
                         verification_level: "orb" // หรือ "device"
                     });
@@ -261,8 +265,7 @@
                          return;
                     }
                 } catch (e) {
-                    console.warn("Verify logic skipped/error (Check Action ID)");
-                    // ในระหว่าง dev อาจจะยอมให้ผ่านไปก่อนถ้ายังไม่ได้ setup action
+                    console.warn("Verify logic skipped/error");
                 }
             } else {
                 alert("Simulation: World ID Verified ✅");
@@ -346,7 +349,6 @@
                 if (res && res.finalPayload && res.finalPayload.status === 'success') {
                     return true;
                 }
-                // ถ้าเป็น Minikit Version เก่าหรือ Mock บางทีอาจจะ return true
                 return true; 
             } catch (e) {
                 console.error("Payment Error:", e);
