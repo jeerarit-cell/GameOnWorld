@@ -1,454 +1,519 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="th">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <title>WORLD CHASER - Verify & Play</title>
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>CYBER CARD BATTLE</title>
     <style>
-        :root { 
-            --neon: #ff9500; 
-            --neon-hot: #00e5ff;
-            --bg: #2d2d2d; 
-            --card: rgba(255, 255, 255, 0.5); 
-            --border: rgba(255, 255, 255, 0.5); 
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;600&family=Orbitron:wght@700&display=swap');
+
+        :root {
+            --main-green: #00ff41;
+            --main-red: #ff3333;
+            --bg-color: #0d0d0d;
         }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
         
-        html, body { 
-            width: 100%; height: 100%; margin: 0; padding: 0; 
-            background-color: #050b18; 
-            background-image: url('https://github.com/user-attachments/assets/2919ee1f-6eb5-4139-ae6c-72aeaa83c89f'); 
-            background-size: cover; 
-            background-position: center; 
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: white; 
-            font-family: -apple-system, sans-serif; 
-            overflow: hidden; 
-            position: fixed;
+        body {
+            margin: 0; padding: 0;
+            background-color: #000;
+            font-family: 'Kanit', sans-serif;
+            width: 100vw; height: 100vh;
+            overflow: hidden;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        .screen { 
-            display: none; height: 100vh; flex-direction: column; width: 100%; max-width: 500px; 
-            margin: 0 auto;
-            background: rgba(10, 15, 28, 0.6); 
-            backdrop-filter: blur(20px) brightness(80%) saturate(140%);
-            -webkit-backdrop-filter: blur(20px) brightness(80%) saturate(140%);
-            position: relative; 
-            border-left: 1px solid rgba(255,255,255,0.1); 
-            border-right: 1px solid rgba(255,255,255,0.1);
+        .app-container {
+            width: 100%; height: 100%; max-width: 480px;
+            background-color: var(--bg-color);
+            background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1535868463750-c78d9543614f?q=80&w=2076');
+            background-size: cover; background-position: center;
+            display: flex; flex-direction: column;
+            position: relative;
         }
-            
-        .news-ticker { background: rgba(0,0,0,0.8); color: var(--neon); padding: 7px 0; font-size: 0.75rem; border-bottom: 1px solid var(--neon); white-space: nowrap; overflow: hidden; flex-shrink: 0; }
-        .ticker-text { display: inline-block; animation: ticker 25s linear infinite; padding-left: 100%; }
-        @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
-        .active { display: flex; }
 
-        .room-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin: 15px 0; }
-        .room-btn { background: rgba(0, 255, 209, 0.1); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: #ccc; cursor: pointer; text-align: center; transition: 0.2s; }
-        .room-btn b { display: block; font-size: 1.2rem; }
-        .room-btn span { font-size: 0.6rem; letter-spacing: 1px; }
-        .room-btn.selected { border-color: var(--neon); background: rgba(0, 255, 209, 0.2); color: var(--neon); box-shadow: 0 0 15px rgba(0, 255, 209, 0.4); border: 1px solid var(--neon); }
-
-        .top-nav { display: flex; justify-content: space-between; padding: 10px 15px; background: rgba(0,0,0,0.4); align-items: center; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px 15px; flex-shrink: 0; }
-        .stat-card { background: rgba(50, 70, 209, 0.3); border: 1px solid var(--border); padding: 8px; border-radius: 10px; text-align: center; font-size: 0.65rem; color:white; }
-        .stat-card b { color: var(--neon); font-size: 0.85rem; display: block; margin-top: 2px; }
-
-        .board-container { padding: 0 15px 10px 15px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; flex-shrink: 0; perspective: 500px; }
-        .slot { 
-            aspect-ratio: 1/1; background: rgba(100,200,220,0.1); border: 1px solid rgba(200,150,50,0.5); 
-            border-radius: 6px; display: flex; align-items: center; justify-content: center; 
-            font-size: 0.6rem; color: #777; transition: all 0.2s ease; overflow: hidden;
-            text-align: center; word-break: break-all; position: relative; padding: 2px;
+        /* HEADER */
+        .header {
+            height: 60px; flex-shrink: 0;
+            background: rgba(20, 20, 20, 0.9);
+            border-bottom: 2px solid #333;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 15px;
         }
-        .slot.active-chaser { 
-            border-color: #fff; background: var(--neon); color: #000 !important; 
-            font-weight: bold; transform: scale(1.1); box-shadow: 0 0 20px var(--neon); z-index: 10;
-        }
-        @keyframes winnerFlash { from { background: var(--neon); } to { background: #fff; transform: scale(1.15); } }
-        .slot.winner-slot { animation: winnerFlash 0.2s infinite alternate; z-index: 20; color: #000 !important; }
+        .user-profile { font-family: 'Orbitron'; color: white; font-size: 1.1rem; }
+        .user-balance { color: var(--main-green); font-size: 0.9rem; }
 
-        .main-content { display: flex; padding: 0 15px 10px 15px; gap: 10px; align-items: flex-start; }
-        .left-panel { flex: 1.6; display: flex; flex-direction: column; gap: 6px; }
-        .status-row { display: flex; gap: 6px; }
-        .status-pill { flex: 1; background: rgba(5, 55, 209, 0.3); border: 1px solid var(--border); border-radius: 8px; padding: 5px; text-align: center; font-size: 0.7rem; color: #ccc; }
+        /* BATTLE AREA */
+        .battle-area {
+            flex: 1; display: flex; flex-direction: column; 
+            justify-content: space-between;
+            padding: 10px; overflow: hidden;
+        }
+
+        /* Boss Zone */
+        .boss-zone { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .boss-img-frame {
+            width: 80px; height: 80px; 
+            border: 2px solid var(--main-red); border-radius: 10px;
+            overflow: hidden; background: #000;
+        }
+        .boss-img-frame img { width: 100%; height: 100%; object-fit: cover; }
         
-        .chat-section { height: 300px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; }
-        #chatBox { flex: 1; padding: 10px; overflow-y: auto; font-size: 0.8rem; scroll-behavior: smooth; }
-        .chat-input-row { padding: 8px 12px; background: rgba(0,0,0,0.6); border-top: 1px solid var(--border); }
-        .chat-input-row input { width: 100%; background: transparent; border: none; color: var(--neon); font-size: 13px; }
-
-        .menu-section { flex: 1; display: flex; flex-direction: column; gap: 8px; height: 340px; }
-        .btn-play-action { flex: 2; background: linear-gradient(145deg, var(--neon), var(--neon-hot)); border: none; color: #000; border-radius: 15px; font-size: 1.2rem; font-weight: 900; cursor: pointer; transition: 0.2s; }
-        .btn-play-action:active { transform: scale(0.95); }
-        .btn-menu-sub { flex: 0.7; background: rgba(5, 55, 209, 0.3); border: 1px solid var(--border); color: #ccc; border-radius: 10px; font-size: 0.7rem; font-weight: bold; cursor: pointer; }
+        /* HP Bars */
+        .hp-bar-box { width: 180px; height: 14px; background: #333; border-radius: 7px; overflow: hidden; position: relative; margin-top: 2px; transition: 0.2s; }
+        .hp-fill { height: 100%; width: 100%; transition: width 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); }
+        .hp-enemy { background: var(--main-red); }
+        .hp-player { background: var(--main-green); }
+        .hp-text { position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 14px; color: white; font-weight: bold; top:0; }
         
-        .overlay-panel { display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #1a1a1a; z-index: 500; padding: 20px; flex-direction: column; }
+        /* Damage Floating Text */
+        .dmg-float {
+            position: absolute; color: white; font-weight: bold; font-size: 1.5rem;
+            text-shadow: 0 0 5px red; top: -20px; left: 50%; transform: translateX(-50%);
+            opacity: 0; transition: 0.5s; pointer-events: none;
+        }
+        .dmg-float.show { top: -40px; opacity: 1; }
+
+        /* Card Rows */
+        .card-row { display: flex; gap: 5px; justify-content: center; height: 60px; width: 100%; margin-top: 5px; }
+        .card {
+            width: 45px; height: 65px; 
+            border: 1px solid #555; border-radius: 4px;
+            background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron'; font-size: 1.2rem; color: white; transition: 0.3s;
+        }
+        .card.enemy { background: #222; border-color: var(--main-red); color: transparent; }
+        .card.enemy.revealed { background: var(--main-red); color: white; border-color: white; }
+        /* ไพ่ที่รอดชีวิต (Safe) */
+        .card.safe { border-color: yellow; box-shadow: 0 0 10px yellow; transform: scale(1.1); z-index: 2; color: yellow; background: black; }
+
+        /* Clash Zone */
+        .clash-zone {
+            display: flex; gap: 5px; justify-content: center; align-items: center;
+            height: 80px; border-top: 1px dashed #444; border-bottom: 1px dashed #444; position: relative;
+        }
+        .clash-slot {
+            width: 45px; height: 65px; border: 1px dashed #555; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .clash-slot.active { border: 1px solid var(--main-green); background: rgba(0, 255, 65, 0.1); }
+        .clash-slot div {
+            width: 100%; height: 100%; background: var(--main-green); color: black;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron'; font-size: 1.2rem; font-weight: bold;
+        }
+
+        /* Player Zone */
+        .player-zone { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .my-card { cursor: pointer; border: 1px solid var(--main-green); color: var(--main-green); }
+        .my-card.selected { transform: translateY(-10px); background: var(--main-green); color: black; }
+        .my-card.used { opacity: 0; pointer-events: none; }
+
+        /* X Mark */
+        .x-mark {
+            position: absolute; font-size: 2.5rem; color: #555; font-weight: 900;
+            text-shadow: 0 0 2px black; z-index: 10;
+        }
+        .card-dead { filter: brightness(0.3); }
+
+        /* CONTROLS */
+        .controls {
+            height: 70px; flex-shrink: 0;
+            background: rgba(0,0,0,0.9); border-top: 1px solid #333;
+            display: flex; justify-content: center; align-items: center; padding: 0 20px;
+        }
+        .main-btn {
+            width: 100%; max-width: 300px; height: 45px;
+            background: var(--main-green); border: none; border-radius: 25px;
+            font-family: 'Orbitron'; font-size: 1.2rem; color: black; font-weight: bold;
+            cursor: pointer;
+        }
+        .main-btn:disabled { background: #333; color: #555; }
+        .main-btn.attack { background: var(--main-red); color: white; }
+
+        /* NAV */
+        .nav-bar {
+            height: 60px; flex-shrink: 0;
+            background: #000; border-top: 1px solid #222;
+            display: flex; justify-content: space-around; align-items: center;
+        }
+        .nav-icon { font-size: 1.5rem; opacity: 0.5; }
+        .nav-icon.active { opacity: 1; color: var(--main-green); }
+
+        /* MODAL */
+        .modal {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.95);
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 99;
+        }
+        .modal h1 { font-family: 'Orbitron'; font-size: 3rem; margin: 0; text-align: center;}
+        .modal p { color: #aaa; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="news-ticker">
-        <div class="ticker-text" id="tickerText">✨ WELCOME TO WORLD CHASER: สัมผัสพลังแห่งสายลมและล่ารางวัล WLD ได้ทันที!</div>
+<div class="app-container">
+    <div class="header">
+        <div class="user-profile">PLAYER_1</div>
+        <div class="user-balance">125.00 WLD</div>
     </div>
 
-    <div id="lobby" class="screen active">
-        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:30px;">
-            <h1 style="color:#fff; font-size: 2.4rem; margin: 0; letter-spacing: 4px;">WORLD</h1>
-            <h1 style="color:var(--neon); font-size: 2.4rem; margin: -10px 0 20px 0; text-shadow: 0 0 20px rgba(0,255,209,0.5);">CHASER</h1>
-            <input type="text" id="userNameInp" placeholder="ระบุชื่อผู้เล่น..." maxlength="12" style="width:100%; padding:15px; border-radius:12px; border:1px solid var(--border); background:rgba(255,255,255,0.05); color:white; margin-bottom:10px; text-align:center;">
+    <div class="battle-area">
+        
+        <div class="boss-zone">
+            <div class="boss-img-frame">
+                <img src="https://i.pinimg.com/736x/87/40/2c/87402c5950cb630a91e4f4460f997235.jpg" alt="Boss">
+            </div>
+            <div class="hp-bar-box" id="eHpBox">
+                <div class="hp-fill hp-enemy" id="enemyHpBar"></div>
+                <div class="hp-text" id="enemyHpText">20/20</div>
+                <div class="dmg-float" id="eDmgText">-0</div>
+            </div>
+            <div class="card-row" id="enemyCardRow"></div>
+        </div>
+
+        <div class="clash-zone" id="clashZone">
+            </div>
+
+        <div class="player-zone">
+            <div class="hp-bar-box" id="pHpBox" style="border-color: #00ff41;">
+                <div class="hp-fill hp-player" id="playerHpBar"></div>
+                <div class="hp-text" id="playerHpText">20/20</div>
+                <div class="dmg-float" id="pDmgText">-0</div>
+            </div>
+            <div class="card-row" id="playerCardRow"></div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="actionBtn" class="main-btn" onclick="initGame()">START GAME</button>
+    </div>
+
+    <div class="nav-bar">
+        <div class="nav-icon active">🏠</div>
+        <div class="nav-icon">⚔️</div>
+        <div class="nav-icon">🎒</div>
+    </div>
+
+    <div id="resultModal" class="modal">
+        <h1 id="resultTitle">WIN</h1>
+        <p id="resultSub">CLICK TO RESTART</p>
+        <button class="main-btn" style="width:200px; margin-top:20px;" onclick="initGame()">PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+    const MAX_HP = 20;
+    let pHP = MAX_HP, eHP = MAX_HP;
+    let pDeck = [], eDeck = [];
+    let placedCards = [null, null, null, null, null];
+    let currentTurn = 0;
+    let isPlaying = false;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function beep(freq=440, type='sine') {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const o = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        o.type = type; o.frequency.value = freq;
+        g.gain.setValueAtTime(0.05, audioCtx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        o.connect(g); g.connect(audioCtx.destination);
+        o.start(); o.stop(audioCtx.currentTime + 0.1);
+    }
+
+    function getShuffledDeck() {
+        return [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
+    }
+
+    function initGame() {
+        pHP = MAX_HP; eHP = MAX_HP;
+        currentTurn = 0;
+        placedCards = [null, null, null, null, null];
+        isPlaying = false;
+        
+        // Reset Visuals
+        document.getElementById('resultModal').style.display = 'none';
+        updateUI();
+        
+        // Setup Slots
+        const cZone = document.getElementById('clashZone');
+        cZone.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            const slot = document.createElement('div');
+            slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
+            slot.dataset.id = i;
+            cZone.appendChild(slot);
+        }
+
+        // Setup Enemy Row
+        const eRow = document.getElementById('enemyCardRow');
+        eRow.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            eRow.innerHTML += `<div class="card enemy" id="eCard${i}">?</div>`;
+        }
+
+        // Setup Player Row
+        pDeck = getShuffledDeck();
+        eDeck = getShuffledDeck();
+        const pRow = document.getElementById('playerCardRow');
+        pRow.innerHTML = '';
+        pDeck.forEach((val) => {
+            const card = document.createElement('div');
+            card.className = 'card my-card';
+            card.textContent = val;
+            card.onclick = () => playCard(val, card);
+            pRow.appendChild(card);
+        });
+
+        // Btn
+        const btn = document.getElementById('actionBtn');
+        btn.textContent = "SELECT CARDS";
+        btn.disabled = true;
+        btn.classList.remove('attack');
+        
+        beep(600, 'square');
+    }
+
+    function playCard(val, el) {
+        if(isPlaying || currentTurn >= 5 || el.classList.contains('used')) return;
+
+        placedCards[currentTurn] = val;
+        
+        const slot = document.querySelector(`.clash-slot[data-id="${currentTurn}"]`);
+        slot.innerHTML = `<div>${val}</div>`;
+        slot.classList.remove('active');
+        
+        el.classList.add('used');
+        beep(400 + (val*50), 'sine');
+
+        currentTurn++;
+        if(currentTurn < 5) {
+            document.querySelector(`.clash-slot[data-id="${currentTurn}"]`).classList.add('active');
+        } else {
+            const btn = document.getElementById('actionBtn');
+            btn.textContent = "ATTACK !!!";
+            btn.disabled = false;
+            btn.classList.add('attack');
+            btn.onclick = startBattle;
+        }
+    }
+
+    async function startBattle() {
+        isPlaying = true;
+        document.getElementById('actionBtn').disabled = true;
+
+        let pSurvivors = []; 
+        let eSurvivors = []; 
+
+        // Loop เปิดไพ่และเช็คผลแพ้ชนะรายใบ
+        for(let i=0; i<5; i++) {
+            const eVal = eDeck[i];
+            const pVal = placedCards[i];
             
-            <div class="room-grid">
-                <div class="room-btn selected" onclick="window.selectRoom(0.001, this)"><b>0.001</b><span>WLD</span></div>
-                <div class="room-btn" onclick="window.selectRoom(0.01, this)"><b>0.01</b><span>WLD</span></div>
-                <div class="room-btn" onclick="window.selectRoom(0.1, this)"><b>0.1</b><span>WLD</span></div>
-                <div class="room-btn" onclick="window.selectRoom(1.0, this)"><b>1.0</b><span>WLD</span></div>
-            </div>
-
-            <button onclick="window.joinGame()" style="width:100%; padding:18px; background:var(--neon); border:none; border-radius:15px; font-weight:900; color:#000; box-shadow: 0 5px 15px rgba(0,255,209,0.3); cursor: pointer;">JOIN & VERIFY</button>
-            <p id="statusMsg" style="font-size:0.7rem; color:#888; margin-top:10px;">Connect World App to Play</p>
-        </div>
-    </div>
-
-    <div id="game" class="screen">
-        <div id="historyPanel" class="overlay-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <b style="color:var(--neon)">HISTORY</b>
-                <button onclick="window.closeOverlay('historyPanel')" style="background:var(--card); color:white; padding:8px 15px; border-radius:8px;">ปิด</button>
-            </div>
-            <div id="historyContent" style="flex:1; overflow-y:auto;"></div>
-        </div>
-
-        <div id="leaderboardPanel" class="overlay-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <b style="color:var(--neon)">LEADERBOARD</b>
-                <button onclick="window.closeOverlay('leaderboardPanel')" style="background:var(--card); color:white; padding:8px 15px; border-radius:8px;">ปิด</button>
-            </div>
-            <div id="leaderboardContent" style="flex:1; overflow-y:auto;"></div>
-        </div>
-
-        <div id="earnPanel" class="overlay-panel" style="justify-content:center; align-items:center; text-align:center;">
-            <h1 style="color:var(--neon)">EARN</h1>
-            <p style="color:#555">Coming Soon</p>
-            <button onclick="window.closeOverlay('earnPanel')" style="background:var(--card); color:white; padding:12px 40px; border-radius:10px;">ย้อนกลับ</button>
-        </div>
-
-        <div class="top-nav">
-            <button onclick="location.reload()" style="background:none; border:1px solid var(--border); color:white; padding:4px 10px;">←</button>
-            <b id="headerPlayerName">PLAYER</b>
-            <div id="roomTag" style="color:var(--neon); font-weight:bold;">WLD 0.001</div>
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">รางวัล (WLD)<br><b id="prizeDisplay">0.0000</b></div>
-            <div class="stat-card">เวลา<br><b id="timer">WAIT</b></div>
-            <div class="stat-card">ผู้เล่น<br><b id="pCountTop">0/12</b></div>
-        </div>
-
-        <div class="board-container" id="board"></div>
-
-        <div class="main-content">
-            <div class="left-panel">
-                <div class="status-row">
-                    <div class="status-pill">ROUND <b id="roundNum" style="color:var(--neon)">#125</b></div>
-                    <div class="status-pill">ONLINE <b id="onlineCount" style="color:var(--neon)">17</b></div>
-                </div>
-                <div class="chat-section">
-                    <div id="chatBox"></div>
-                    <div class="chat-input-row">
-                        <input type="text" id="chatInp" placeholder="พิมพ์ข้อความ..." onkeydown="if(event.key==='Enter') window.sendMsg()">
-                    </div>
-                </div>
-            </div>
-            <div class="menu-section">
-                <button class="btn-play-action" id="btnPlay" onclick="window.play()">PLAY & PAY</button>
-                <button class="btn-menu-sub" onclick="window.openOverlay('historyPanel')">ประวัติ</button>
-                <button class="btn-menu-sub" onclick="window.openOverlay('leaderboardPanel')">อันดับ</button>
-                <button class="btn-menu-sub" onclick="window.openOverlay('earnPanel')" style="color:var(--neon)">EARN</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { MiniKit } from 'https://cdn.jsdelivr.net/npm/@worldcoin/minikit-js@latest/+esm';
-
-        // --- ตั้งค่า App Config ---
-        const MY_WALLET_ADDRESS = "0xYOUR_WALLET_ADDRESS_HERE"; // <--- ⚠️ อย่าลืมแก้เป็นเลขกระเป๋าจริงของคุณนะครับ!
-        const APP_ID = "app_7a67630a2166eba727b9b28310553507"; // ✅ อัปเดต ID ตามที่คุณแจ้งมาแล้ว
-        const ACTION_ID = "join-game"; // Identifier จากรูปที่คุณส่งมา
-
-        let currentPlayerName = "GUEST";
-        let players = [];
-        let hasJoined = false;
-        let timerStarted = false;
-        let round = 125;
-        let gameHistory = [];
-        let leaderData = {};
-        let ENTRY_FEE = 0.001;
-        let audioCtx;
-        const HOUSE_FEE = 0.15;
-        const MAX_PLAYERS = 12;
-
-        // --- Init ---
-        function initMiniKit() {
-            // ติดตั้ง MiniKit พร้อม App ID
-            MiniKit.install({ appId: APP_ID });
+            const eCardEl = document.getElementById(`eCard${i}`);
+            eCardEl.textContent = eVal;
+            eCardEl.classList.add('revealed');
+            beep(800, 'triangle');
             
-            if (MiniKit.isInstalled()) {
-                console.log("World App Detected");
-                document.getElementById('statusMsg').textContent = "✅ Connected to World App";
-                document.getElementById('statusMsg').style.color = "#00ff00";
+            await sleep(400);
+
+            const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
+            
+            if (pVal > eVal) {
+                // Player ชนะตานี้
+                addX(eCardEl);
+                eCardEl.classList.add('card-dead');
+                pSurvivors.push(pVal);
+            } else if (eVal > pVal) {
+                // Enemy ชนะตานี้
+                addX(pSlot);
+                pSlot.querySelector('div').style.filter = "brightness(0.3)";
+                eSurvivors.push(eVal);
             } else {
-                console.log("Desktop / Not Installed");
-                document.getElementById('statusMsg').textContent = "⚠️ Desktop Simulation Mode";
+                // เสมอ -> ตายคู่
+                addX(eCardEl); eCardEl.classList.add('card-dead');
+                addX(pSlot); pSlot.querySelector('div').style.filter = "brightness(0.3)";
+            }
+            await sleep(600);
+        }
+
+        // --- จบ 5 ใบ คำนวณความเสียหาย ---
+        const pCount = pSurvivors.length;
+        const eCount = eSurvivors.length;
+        
+        await sleep(500);
+
+        if (pCount > eCount) {
+            // เราเหลือเยอะกว่า -> เราโจมตีฝ่ายเดียว
+            const dmg = pSurvivors.reduce((a, b) => a + b, 0);
+            eHP -= dmg;
+            flashDamage('e', dmg);
+            highlightSurvivors('clash-slot', placedCards, pSurvivors);
+        } else if (eCount > pCount) {
+            // บอสเหลือเยอะกว่า -> บอสโจมตีฝ่ายเดียว
+            const dmg = eSurvivors.reduce((a, b) => a + b, 0);
+            pHP -= dmg;
+            flashDamage('p', dmg);
+            highlightSurvivors('enemy', eDeck, eSurvivors);
+        } else {
+            // --- กรณีจำนวนที่รอดเท่ากัน (สวนหมัด) ---
+            const pDmg = pSurvivors.reduce((a, b) => a + b, 0); // แต้มที่เราเหลือ
+            const eDmg = eSurvivors.reduce((a, b) => a + b, 0); // แต้มที่บอสเหลือ
+            
+            // แลกกันเลย!
+            eHP -= pDmg;
+            pHP -= eDmg;
+            
+            flashDamage('e', pDmg); // บอสโดนดาเมจจากเรา
+            
+            // รอแปปนึงค่อยให้เราโดนบ้าง (จะได้เห็นชัดๆ)
+            setTimeout(() => {
+                flashDamage('p', eDmg); // เราโดนดาเมจจากบอส
+            }, 300);
+
+            highlightSurvivors('clash-slot', placedCards, pSurvivors);
+            highlightSurvivors('enemy', eDeck, eSurvivors);
+        }
+
+        updateUI();
+        await sleep(1500);
+        checkEndGame();
+    }
+
+    function highlightSurvivors(className, allCards, survivorValues) {
+        if (className === 'enemy') {
+            for(let i=0; i<5; i++) {
+                const el = document.getElementById(`eCard${i}`);
+                if (!el.classList.contains('card-dead')) {
+                    el.classList.add('safe');
+                }
+            }
+        } else {
+            for(let i=0; i<5; i++) {
+                const el = document.querySelector(`.clash-slot[data-id="${i}"] div`);
+                if (el && el.style.filter === "") {
+                    el.parentElement.classList.add('active');
+                    el.parentElement.style.border = "2px solid yellow";
+                    el.parentElement.style.boxShadow = "0 0 15px yellow";
+                    el.style.color = "yellow";
+                    el.style.background = "black";
+                }
             }
         }
-        initMiniKit();
+    }
 
-        function initAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+    function flashDamage(who, amount) {
+        if(amount <= 0) return;
+        const box = document.getElementById(who === 'e' ? 'eHpBox' : 'pHpBox');
+        const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
+        
+        txt.textContent = "-" + amount;
+        txt.classList.add('show');
+        box.style.borderColor = 'white';
+
+        beep(100, 'sawtooth');
+
+        setTimeout(() => {
+            txt.classList.remove('show');
+            box.style.borderColor = who === 'e' ? '#333' : '#00ff41';
+        }, 1000);
+    }
+
+    function addX(target) {
+        const x = document.createElement('div');
+        x.className = 'x-mark';
+        x.textContent = 'X';
+        x.style.top = '50%'; x.style.left = '50%';
+        x.style.transform = 'translate(-50%, -50%)';
+        target.style.position = 'relative'; 
+        target.appendChild(x);
+    }
+
+    function updateUI() {
+        if(pHP < 0) pHP = 0;
+        if(eHP < 0) eHP = 0;
+        document.getElementById('playerHpBar').style.width = (pHP/MAX_HP)*100 + "%";
+        document.getElementById('playerHpText').textContent = pHP + "/" + MAX_HP;
+        document.getElementById('enemyHpBar').style.width = (eHP/MAX_HP)*100 + "%";
+        document.getElementById('enemyHpText').textContent = eHP + "/" + MAX_HP;
+    }
+
+    function checkEndGame() {
+        if (pHP > 0 && eHP > 0) {
+            const btn = document.getElementById('actionBtn');
+            btn.textContent = "NEXT ROUND";
+            btn.disabled = false;
+            btn.classList.remove('attack');
+            btn.classList.add('main-btn');
+            btn.onclick = nextRound;
+        } else {
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('resultTitle');
+            const sub = document.getElementById('resultSub');
+            
+            if (pHP === 0 && eHP === 0) {
+                title.textContent = "SUDDEN DEATH";
+                title.style.color = "yellow";
+                sub.textContent = "DOUBLE KO";
+            } else if (pHP === 0) {
+                title.textContent = "YOU LOSE";
+                title.style.color = "red";
+                sub.textContent = "BETTER LUCK NEXT TIME";
+            } else {
+                title.textContent = "YOU WIN!";
+                title.style.color = "#00ff41";
+                sub.textContent = "REWARD: 0.001 WLD";
+            }
+            modal.style.display = 'flex';
         }
+    }
 
-        function playSfx(f, type, d, v) {
-            try {
-                initAudio();
-                const o = audioCtx.createOscillator();
-                const g = audioCtx.createGain();
-                o.type = type; o.frequency.setValueAtTime(f, audioCtx.currentTime);
-                g.gain.setValueAtTime(v, audioCtx.currentTime);
-                g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
-                o.connect(g); g.connect(audioCtx.destination);
-                o.start(); o.stop(audioCtx.currentTime + d);
-            } catch(e) {}
-        }
-
-        window.selectRoom = function(fee, btn) {
-            initAudio();
-            ENTRY_FEE = fee;
-            document.querySelectorAll('.room-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            playSfx(600, 'sine', 0.1, 0.1);
-        }
-
-        window.openOverlay = function(id) {
-            initAudio();
-            document.getElementById(id).style.display = 'flex';
-            if(id === 'leaderboardPanel') renderLeaderboard();
-            if(id === 'historyPanel') renderHistory();
+    function nextRound() {
+        currentTurn = 0;
+        placedCards = [null, null, null, null, null];
+        isPlaying = false;
+        
+        const cZone = document.getElementById('clashZone');
+        cZone.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            const slot = document.createElement('div');
+            slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
+            slot.dataset.id = i;
+            cZone.appendChild(slot);
         }
         
-        window.closeOverlay = function(id) { 
-            document.getElementById(id).style.display = 'none'; 
+        const eRow = document.getElementById('enemyCardRow');
+        eRow.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            eRow.innerHTML += `<div class="card enemy" id="eCard${i}">?</div>`;
         }
+        
+        pDeck = getShuffledDeck();
+        eDeck = getShuffledDeck();
+        
+        const pRow = document.getElementById('playerCardRow');
+        pRow.innerHTML = '';
+        pDeck.forEach((val) => {
+            const card = document.createElement('div');
+            card.className = 'card my-card';
+            card.textContent = val;
+            card.onclick = () => playCard(val, card);
+            pRow.appendChild(card);
+        });
+        
+        const btn = document.getElementById('actionBtn');
+        btn.textContent = "SELECT CARDS";
+        btn.disabled = true;
+        btn.onclick = null;
+        
+        beep(600, 'square');
+    }
 
-        // --- 1. JOIN ROOM & VERIFY (ยืนยันตัวตน) ---
-        window.joinGame = async function() {
-            initAudio();
-            const nameInp = document.getElementById('userNameInp').value.trim();
-            currentPlayerName = nameInp || "USER_" + Math.floor(Math.random()*999);
+    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-            // 1. ตรวจสอบการยืนยันตัวตน (Verify)
-            if (MiniKit.isInstalled()) {
-                try {
-                    // เรียกคำสั่ง Verify โดยใช้ Action ที่ถูกต้องจากรูปภาพ
-                    const res = await MiniKit.commands.verify({
-                        action: ACTION_ID,  // ใช้ "join-game" ตามที่ตั้งค่าในเว็บ
-                        signal: currentPlayerName, 
-                        verification_level: "orb" // หรือ "device"
-                    });
-                    
-                    if (res.finalPayload.status !== 'success') {
-                         alert("Verification Failed");
-                         return;
-                    }
-                } catch (e) {
-                    console.warn("Verify logic skipped/error");
-                }
-            } else {
-                alert("Simulation: World ID Verified ✅");
-            }
-
-            // 2. ผ่านแล้วเข้า Lobby
-            enterGameLobby();
-        }
-
-        function enterGameLobby() {
-            document.getElementById('headerPlayerName').textContent = currentPlayerName.toUpperCase();
-            document.getElementById('roomTag').textContent = "WLD " + ENTRY_FEE;
-            
-            // อัปเดตปุ่ม Play ให้บอกราคา
-            document.getElementById('btnPlay').innerHTML = `PLAY<br><span style="font-size:0.65rem; font-weight:normal;">PAY ${ENTRY_FEE} WLD</span>`;
-            
-            document.getElementById('lobby').classList.remove('active');
-            document.getElementById('game').classList.add('active');
-            updateBoard();
-            playSfx(800, 'sine', 0.2, 0.1);
-        }
-
-        // --- 2. PLAY & PAY (จ่ายเงินเพื่อเล่น) ---
-        window.play = async function() {
-            initAudio(); 
-            if(hasJoined) return;
-
-            const btn = document.getElementById('btnPlay');
-            
-            // 1. จ่ายเงินก่อน (Pay)
-            if (MiniKit.isInstalled()) {
-                const isPaid = await handlePayment(ENTRY_FEE);
-                if (!isPaid) {
-                    alert("Payment Cancelled");
-                    return; // ถ้าจ่ายไม่สำเร็จ ไม่ให้เล่น
-                }
-            } else {
-                 // Debug Mode
-                 const confirmPay = confirm(`Simulate Payment of ${ENTRY_FEE} WLD?`);
-                 if(!confirmPay) return;
-            }
-
-            // 2. ถ้าจ่ายผ่านแล้ว เริ่มเกมได้
-            hasJoined = true;
-            players.push(currentPlayerName); 
-            updateBoard();
-            
-            btn.disabled = true; btn.style.opacity = "0.5";
-            playSfx(400, 'sine', 0.1, 0.1);
-            
-            // Bot Logic
-            let botCount = 0;
-            const maxBots = Math.floor(Math.random() * 5) + 3; 
-            let itv = setInterval(() => {
-                if(players.length < MAX_PLAYERS && botCount < maxBots) {
-                    const botNames = ["Richie", "Lucky777", "CryptoKing", "MoonBoy", "WLD_Hunter", "Satoshi", "Whale"];
-                    const randomBot = botNames[Math.floor(Math.random()*botNames.length)] + "_" + Math.floor(Math.random()*99);
-                    players.push(randomBot);
-                    botCount++;
-                    updateBoard();
-                    playSfx(1000, 'sine', 0.03, 0.01); 
-                    if(players.length >= 2 && !timerStarted) startCountdown();
-                } else {
-                    clearInterval(itv);
-                }
-            }, Math.random() * 1000 + 400);
-        }
-
-        async function handlePayment(amount) {
-            try {
-                const res = await MiniKit.commands.pay({
-                    reference: "WCHASER_" + Date.now(),
-                    to: MY_WALLET_ADDRESS,
-                    tokens: [{
-                        symbol: "WLD",
-                        token_amount: amount.toString()
-                    }],
-                    description: `Play Round (${amount} WLD)`
-                });
-                
-                if (res && res.finalPayload && res.finalPayload.status === 'success') {
-                    return true;
-                }
-                return true; 
-            } catch (e) {
-                console.error("Payment Error:", e);
-                return false;
-            }
-        }
-
-        function shortenName(name) {
-            return name.length > 7 ? name.substring(0, 6) + ".." : name;
-        }
-
-        function updateBoard() {
-            const b = document.getElementById('board'); b.innerHTML = "";
-            for(let i=0; i < MAX_PLAYERS; i++){
-                const s = document.createElement('div'); s.className = 'slot';
-                if(players[i]) {
-                    s.textContent = shortenName(players[i].toUpperCase());
-                    s.style.color = "rgba(0, 255, 209, 1)"; s.style.borderColor = "rgba(0, 255, 209, 1)"; 
-                }
-                b.appendChild(s);
-            }
-            const prize = (players.length >= 2) ? ((players.length * ENTRY_FEE) * (1-HOUSE_FEE)).toFixed(4) : "0.0000";
-            document.getElementById('prizeDisplay').textContent = prize;
-            document.getElementById('pCountTop').textContent = `${players.length}/12`;
-        }
-
-        function startCountdown() {
-            timerStarted = true; let sec = 10;
-            const cItv = setInterval(() => {
-                sec--; document.getElementById('timer').textContent = sec + "s";
-                if(sec <= 3 && sec > 0) playSfx(600, 'sine', 0.1, 0.05);
-                if(sec <= 0) { clearInterval(cItv); document.getElementById('timer').textContent = "LIVE"; runGame(); }
-            }, 1000);
-        }
-
-        function runGame() {
-            const slots = document.querySelectorAll('.slot');
-            let cur = 0, speed = 50, steps = 0;
-            const winIdx = Math.floor(Math.random() * players.length);
-            const totalSteps = (MAX_PLAYERS * 4) + winIdx; 
-            function move() {
-                slots.forEach(s => s.classList.remove('active-chaser'));
-                cur = (cur + 1) % MAX_PLAYERS;
-                slots[cur].classList.add('active-chaser');
-                playSfx(300 + (steps * 4), 'triangle', 0.05, 0.03);
-                steps++;
-                if(steps < totalSteps) {
-                    if(totalSteps - steps < 15) speed += 25;
-                    if(totalSteps - steps < 5) speed += 60;
-                    setTimeout(move, speed);
-                } else {
-                    finish(cur);
-                }
-            }
-            move();
-        }
-
-        function finish(idx) {
-            const slots = document.querySelectorAll('.slot');
-            const winner = players[idx];
-            const amount = parseFloat(document.getElementById('prizeDisplay').textContent);
-            slots[idx].classList.add('winner-slot');
-            gameHistory.unshift({ round: round, winner: winner, amount: amount.toFixed(4) });
-            leaderData[winner] = (leaderData[winner] || 0) + amount;
-            playSfx(880, 'sine', 0.5, 0.1); 
-            document.getElementById('tickerText').textContent = `🎊 ROUND #${round} WINNER: ${winner} WON ${amount.toFixed(4)} WLD!`;
-            addChat("🏆 SYSTEM", `${winner} ชนะรับ ${amount.toFixed(4)} WLD`, "color:#000; background:var(--neon); font-weight:bold; padding:0 4px; border-radius:4px;");
-            setTimeout(reset, 5000);
-        }
-
-        function renderHistory() {
-            const h = document.getElementById('historyContent');
-            h.innerHTML = gameHistory.map(i => `<div style="padding:12px; border-bottom:1px solid #1a1a1e;">รอบ #${i.round} | <b>${i.winner}</b> <span style="color:var(--neon); float:right;">${i.amount} WLD</span></div>`).join('') || "ไม่มีประวัติ";
-        }
-
-        function renderLeaderboard() {
-            const l = document.getElementById('leaderboardContent');
-            const sorted = Object.entries(leaderData).sort((a,b) => b[1] - a[1]).slice(0, 50);
-            l.innerHTML = sorted.map((i, idx) => `<div style="padding:12px; border-bottom:1px solid #1a1a1e;">${idx+1}. <b>${i[0]}</b> <span style="color:var(--neon); float:right;">${i[1].toFixed(4)} WLD</span></div>`).join('') || "ไม่มีข้อมูล";
-        }
-
-        function reset() {
-            round++; document.getElementById('roundNum').textContent = "#" + round;
-            players = []; hasJoined = false; timerStarted = false;
-            document.getElementById('timer').textContent = "WAIT"; updateBoard();
-            const btn = document.getElementById('btnPlay');
-            btn.disabled = false; btn.style.opacity = "1";
-        }
-
-        function addChat(u, m, s='') {
-            const b = document.getElementById('chatBox');
-            b.innerHTML += `<div style="margin-bottom:6px; font-size:0.75rem;"><b style="${s}">${u}:</b> <span style="color:#ddd">${m}</span></div>`;
-            b.scrollTop = b.scrollHeight;
-        }
-
-        window.sendMsg = function() {
-            initAudio();
-            const i = document.getElementById('chatInp');
-            if(i.value.trim()) { addChat(currentPlayerName, i.value, "color:var(--neon)"); i.value = ""; }
-        }
-    </script>
+    initGame(); 
+</script>
 </body>
 </html>
