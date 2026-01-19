@@ -11,6 +11,11 @@
             --main-green: #00ff41;
             --main-red: #ff3333;
             --bg-color: #0d0d0d;
+            --card-width: 50px;
+            --card-height: 70px;
+            --gap: 6px;
+            /* คำนวณความกว้างรวมของแถวไพ่ (5 ใบ + 4 ช่องว่าง) */
+            --total-width: calc((var(--card-width) * 5) + (var(--gap) * 4)); 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
@@ -27,7 +32,7 @@
         .app-container {
             width: 100%; height: 100%; max-width: 480px;
             background-color: var(--bg-color);
-            background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1535868463750-c78d9543614f?q=80&w=2076');
+            background-image: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1535868463750-c78d9543614f?q=80&w=2076');
             background-size: cover; background-position: center;
             display: flex; flex-direction: column;
             position: relative;
@@ -39,116 +44,154 @@
             background: rgba(20, 20, 20, 0.9);
             border-bottom: 2px solid #333;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 0 15px;
+            padding: 0 20px; z-index: 10;
         }
-        .user-profile { font-family: 'Orbitron'; color: white; font-size: 1.1rem; }
+        .user-profile { font-family: 'Orbitron'; color: white; font-size: 1.2rem; }
         .user-balance { color: var(--main-green); font-size: 0.9rem; }
 
-        /* BATTLE AREA */
+        /* BATTLE AREA Container */
         .battle-area {
-            flex: 1; display: flex; flex-direction: column; 
-            justify-content: space-between;
-            padding: 10px; overflow: hidden;
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            justify-content: center; /* ดันทุกอย่างมารวมกันตรงกลาง */
+            gap: 15px; /* ระยะห่างระหว่างโซนบน-กลาง-ล่าง */
+            padding: 10px;
         }
 
-        /* Boss Zone */
-        .boss-zone { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .boss-img-frame {
-            width: 80px; height: 80px; 
-            border: 2px solid var(--main-red); border-radius: 10px;
-            overflow: hidden; background: #000;
+        /* Common Column Width (เพื่อให้ Avatar, HP, Card เท่ากันเป๊ะ) */
+        .game-column {
+            width: var(--total-width);
+            display: flex; flex-direction: column; gap: 4px;
         }
-        .boss-img-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* --- BOSS ZONE --- */
+        .boss-zone { display: flex; flex-direction: column; gap: 5px; }
         
-        /* HP Bars */
-        .hp-bar-box { width: 180px; height: 14px; background: #333; border-radius: 7px; overflow: hidden; position: relative; margin-top: 2px; transition: 0.2s; }
-        .hp-fill { height: 100%; width: 100%; transition: width 0.5s cubic-bezier(0.4, 0.0, 0.2, 1); }
+        /* Avatar Banner */
+        .boss-banner {
+            width: 100%; height: 60px; /* ปรับความสูงแบนเนอร์ */
+            border: 2px solid var(--main-red); border-radius: 8px;
+            overflow: hidden; background: #000; position: relative;
+        }
+        .boss-banner img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+        
+        /* HP Bar Styles */
+        .hp-container {
+            width: 100%; height: 18px; /* ใหญ่ขึ้น */
+            background: #222; border: 1px solid #555; border-radius: 4px;
+            overflow: hidden; position: relative;
+        }
+        .hp-fill { height: 100%; width: 100%; transition: width 0.4s ease; }
         .hp-enemy { background: var(--main-red); }
-        .hp-player { background: var(--main-green); }
-        .hp-text { position: absolute; width: 100%; text-align: center; font-size: 10px; line-height: 14px; color: white; font-weight: bold; top:0; }
+        .hp-player { background: var(--main-red); } /* เปลี่ยนเป็นสีแดงตามขอ */
         
-        /* Damage Floating Text */
-        .dmg-float {
-            position: absolute; color: white; font-weight: bold; font-size: 1.5rem;
-            text-shadow: 0 0 5px red; top: -20px; left: 50%; transform: translateX(-50%);
-            opacity: 0; transition: 0.5s; pointer-events: none;
+        .hp-text {
+            position: absolute; width: 100%; text-align: center; top: 0;
+            font-size: 11px; line-height: 16px; color: white; font-weight: bold; text-shadow: 1px 1px 2px black;
         }
-        .dmg-float.show { top: -40px; opacity: 1; }
+
+        /* Floating Damage */
+        .dmg-float {
+            position: absolute; color: white; font-weight: 900; font-size: 1.8rem;
+            text-shadow: 0 0 10px red; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            opacity: 0; transition: 0.5s; pointer-events: none; z-index: 20;
+        }
+        .dmg-float.show { top: -20px; opacity: 1; }
 
         /* Card Rows */
-        .card-row { display: flex; gap: 5px; justify-content: center; height: 60px; width: 100%; margin-top: 5px; }
+        .card-row { display: flex; gap: var(--gap); justify-content: center; width: 100%; margin-top: 2px;}
         .card {
-            width: 45px; height: 65px; 
-            border: 1px solid #555; border-radius: 4px;
+            width: var(--card-width); height: var(--card-height);
+            border: 1px solid #444; border-radius: 6px;
             background: rgba(0,0,0,0.6);
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron'; font-size: 1.2rem; color: white; transition: 0.3s;
+            font-family: 'Orbitron'; font-size: 1.4rem; color: white; transition: 0.2s;
+            position: relative;
         }
-        .card.enemy { background: #222; border-color: var(--main-red); color: transparent; }
+        .card.enemy { background: #1a1a1a; border-color: var(--main-red); color: transparent; }
         .card.enemy.revealed { background: var(--main-red); color: white; border-color: white; }
-        /* ไพ่ที่รอดชีวิต (Safe) */
-        .card.safe { border-color: yellow; box-shadow: 0 0 10px yellow; transform: scale(1.1); z-index: 2; color: yellow; background: black; }
+        
+        /* Dead Card Style */
+        .card.dead { 
+            filter: brightness(0.2); /* มืดลงเมื่อตาย */
+            border-color: #333 !important; 
+        }
 
-        /* Clash Zone */
+        /* --- CLASH ZONE (Middle) --- */
         .clash-zone {
-            display: flex; gap: 5px; justify-content: center; align-items: center;
-            height: 80px; border-top: 1px dashed #444; border-bottom: 1px dashed #444; position: relative;
+            width: var(--total-width); height: 90px;
+            display: flex; gap: var(--gap); justify-content: center; align-items: center;
+            /* เส้นประจางๆ */
+            border-top: 1px dashed rgba(255,255,255,0.1); 
+            border-bottom: 1px dashed rgba(255,255,255,0.1);
         }
         .clash-slot {
-            width: 45px; height: 65px; border: 1px dashed #555; border-radius: 4px;
+            width: var(--card-width); height: var(--card-height);
+            border: 1px dashed #444; border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
         }
-        .clash-slot.active { border: 1px solid var(--main-green); background: rgba(0, 255, 65, 0.1); }
+        .clash-slot.active { border: 1px solid var(--main-green); background: rgba(0, 255, 65, 0.1); box-shadow: 0 0 10px rgba(0,255,65,0.2); }
         .clash-slot div {
-            width: 100%; height: 100%; background: var(--main-green); color: black;
+            width: 100%; height: 100%; background: var(--main-green); color: black; border-radius: 4px;
             display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron'; font-size: 1.2rem; font-weight: bold;
+            font-family: 'Orbitron'; font-size: 1.4rem; font-weight: bold;
         }
+        .clash-slot div.dead-content { filter: brightness(0.2); } /* ไพ่เราตายก็มืดลง */
 
-        /* Player Zone */
-        .player-zone { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        /* --- PLAYER ZONE --- */
+        .player-zone { display: flex; flex-direction: column; gap: 5px; }
         .my-card { cursor: pointer; border: 1px solid var(--main-green); color: var(--main-green); }
-        .my-card.selected { transform: translateY(-10px); background: var(--main-green); color: black; }
+        .my-card.selected { transform: translateY(-10px); background: var(--main-green); color: black; box-shadow: 0 0 15px var(--main-green); }
         .my-card.used { opacity: 0; pointer-events: none; }
 
-        /* X Mark */
+        /* --- X MARK (Big) --- */
         .x-mark {
-            position: absolute; font-size: 2.5rem; color: #555; font-weight: 900;
-            text-shadow: 0 0 2px black; z-index: 10;
+            position: absolute; 
+            font-size: 3.5rem; /* ใหญ่เต็มหน้าไพ่ */
+            line-height: var(--card-height);
+            color: #ff0000; font-weight: 900;
+            text-shadow: 0 0 5px black; z-index: 10;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            animation: stomp 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        .card-dead { filter: brightness(0.3); }
+        @keyframes stomp { from { transform: translate(-50%, -50%) scale(3); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
 
-        /* CONTROLS */
+        /* CONTROLS (Bottom) */
         .controls {
-            height: 70px; flex-shrink: 0;
+            height: 80px; flex-shrink: 0;
             background: rgba(0,0,0,0.9); border-top: 1px solid #333;
-            display: flex; justify-content: center; align-items: center; padding: 0 20px;
+            display: flex; justify-content: center; align-items: center; padding: 0 20px; z-index: 10;
         }
         .main-btn {
-            width: 100%; max-width: 300px; height: 45px;
-            background: var(--main-green); border: none; border-radius: 25px;
-            font-family: 'Orbitron'; font-size: 1.2rem; color: black; font-weight: bold;
+            width: 100%; max-width: 320px; height: 50px;
+            background: var(--main-green); border: none; border-radius: 8px;
+            font-family: 'Orbitron'; font-size: 1.5rem; color: black; font-weight: bold; letter-spacing: 1px;
             cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,255,65,0.4);
         }
-        .main-btn:disabled { background: #333; color: #555; }
-        .main-btn.attack { background: var(--main-red); color: white; }
+        .main-btn:disabled { background: #333; color: #555; box-shadow: none; }
+        .main-btn.attack { background: var(--main-red); color: white; box-shadow: 0 0 15px red; }
+        .main-btn.sudden { background: yellow; color: black; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
 
         /* NAV */
         .nav-bar {
             height: 60px; flex-shrink: 0;
             background: #000; border-top: 1px solid #222;
-            display: flex; justify-content: space-around; align-items: center;
+            display: flex; justify-content: space-around; align-items: center; z-index: 10;
         }
-        .nav-icon { font-size: 1.5rem; opacity: 0.5; }
+        .nav-icon { font-size: 1.5rem; opacity: 0.5; cursor: pointer; }
         .nav-icon.active { opacity: 1; color: var(--main-green); }
 
-        /* MODAL */
+        /* RESULT MODAL */
         .modal {
             position: absolute; inset: 0; background: rgba(0,0,0,0.95);
-            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 99;
+            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
         }
-        .modal h1 { font-family: 'Orbitron'; font-size: 3rem; margin: 0; text-align: center;}
-        .modal p { color: #aaa; margin-top: 5px; }
+        .modal h1 { font-family: 'Orbitron'; font-size: 3rem; margin: 0; text-align: center; }
+        .modal p { color: #aaa; margin-top: 5px; font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -161,33 +204,40 @@
 
     <div class="battle-area">
         
-        <div class="boss-zone">
-            <div class="boss-img-frame">
+        <div class="game-column boss-zone">
+            <div class="boss-banner">
                 <img src="https://i.pinimg.com/736x/87/40/2c/87402c5950cb630a91e4f4460f997235.jpg" alt="Boss">
             </div>
-            <div class="hp-bar-box" id="eHpBox">
-                <div class="hp-fill hp-enemy" id="enemyHpBar"></div>
-                <div class="hp-text" id="enemyHpText">20/20</div>
+            
+            <div style="position: relative;">
+                <div class="hp-container">
+                    <div class="hp-fill hp-enemy" id="enemyHpBar"></div>
+                    <div class="hp-text" id="enemyHpText">20/20</div>
+                </div>
                 <div class="dmg-float" id="eDmgText">-0</div>
             </div>
+
             <div class="card-row" id="enemyCardRow"></div>
         </div>
 
         <div class="clash-zone" id="clashZone">
             </div>
 
-        <div class="player-zone">
-            <div class="hp-bar-box" id="pHpBox" style="border-color: #00ff41;">
-                <div class="hp-fill hp-player" id="playerHpBar"></div>
-                <div class="hp-text" id="playerHpText">20/20</div>
+        <div class="game-column player-zone">
+            <div style="position: relative;">
+                <div class="hp-container" style="border-color: var(--main-green);">
+                    <div class="hp-fill hp-player" id="playerHpBar"></div>
+                    <div class="hp-text" id="playerHpText">20/20</div>
+                </div>
                 <div class="dmg-float" id="pDmgText">-0</div>
             </div>
+
             <div class="card-row" id="playerCardRow"></div>
         </div>
     </div>
 
     <div class="controls">
-        <button id="actionBtn" class="main-btn" onclick="initGame()">START GAME</button>
+        <button id="actionBtn" class="main-btn" onclick="initGame(20)">START GAME</button>
     </div>
 
     <div class="nav-bar">
@@ -199,13 +249,16 @@
     <div id="resultModal" class="modal">
         <h1 id="resultTitle">WIN</h1>
         <p id="resultSub">CLICK TO RESTART</p>
-        <button class="main-btn" style="width:200px; margin-top:20px;" onclick="initGame()">PLAY AGAIN</button>
+        <button id="restartBtn" class="main-btn" style="width:220px; margin-top:30px;" onclick="initGame(20)">PLAY AGAIN</button>
     </div>
 </div>
 
 <script>
-    const MAX_HP = 20;
-    let pHP = MAX_HP, eHP = MAX_HP;
+    const MAX_HP_NORMAL = 20;
+    const MAX_HP_SUDDEN = 10;
+    let currentMaxHP = 20;
+    let pHP = 20, eHP = 20;
+    
     let pDeck = [], eDeck = [];
     let placedCards = [null, null, null, null, null];
     let currentTurn = 0;
@@ -227,8 +280,12 @@
         return [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
     }
 
-    function initGame() {
-        pHP = MAX_HP; eHP = MAX_HP;
+    // startHP รับค่าเข้ามา (20 หรือ 10)
+    function initGame(startHP) {
+        currentMaxHP = startHP;
+        pHP = startHP;
+        eHP = startHP;
+        
         currentTurn = 0;
         placedCards = [null, null, null, null, null];
         isPlaying = false;
@@ -267,11 +324,11 @@
             pRow.appendChild(card);
         });
 
-        // Btn
+        // Btn Logic
         const btn = document.getElementById('actionBtn');
         btn.textContent = "SELECT CARDS";
         btn.disabled = true;
-        btn.classList.remove('attack');
+        btn.className = 'main-btn'; // รีเซ็ตสีปุ่ม
         
         beep(600, 'square');
     }
@@ -322,19 +379,19 @@
             const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
             
             if (pVal > eVal) {
-                // Player ชนะตานี้
+                // Player ชนะตานี้ (ศัตรูตาย)
                 addX(eCardEl);
-                eCardEl.classList.add('card-dead');
+                eCardEl.classList.add('dead');
                 pSurvivors.push(pVal);
             } else if (eVal > pVal) {
-                // Enemy ชนะตานี้
+                // Enemy ชนะตานี้ (เราตาย)
                 addX(pSlot);
-                pSlot.querySelector('div').style.filter = "brightness(0.3)";
+                pSlot.querySelector('div').classList.add('dead-content');
                 eSurvivors.push(eVal);
             } else {
                 // เสมอ -> ตายคู่
-                addX(eCardEl); eCardEl.classList.add('card-dead');
-                addX(pSlot); pSlot.querySelector('div').style.filter = "brightness(0.3)";
+                addX(eCardEl); eCardEl.classList.add('dead');
+                addX(pSlot); pSlot.querySelector('div').classList.add('dead-content');
             }
             await sleep(600);
         }
@@ -346,35 +403,23 @@
         await sleep(500);
 
         if (pCount > eCount) {
-            // เราเหลือเยอะกว่า -> เราโจมตีฝ่ายเดียว
             const dmg = pSurvivors.reduce((a, b) => a + b, 0);
             eHP -= dmg;
             flashDamage('e', dmg);
-            highlightSurvivors('clash-slot', placedCards, pSurvivors);
         } else if (eCount > pCount) {
-            // บอสเหลือเยอะกว่า -> บอสโจมตีฝ่ายเดียว
             const dmg = eSurvivors.reduce((a, b) => a + b, 0);
             pHP -= dmg;
             flashDamage('p', dmg);
-            highlightSurvivors('enemy', eDeck, eSurvivors);
         } else {
-            // --- กรณีจำนวนที่รอดเท่ากัน (สวนหมัด) ---
-            const pDmg = pSurvivors.reduce((a, b) => a + b, 0); // แต้มที่เราเหลือ
-            const eDmg = eSurvivors.reduce((a, b) => a + b, 0); // แต้มที่บอสเหลือ
+            // สวนหมัด (Survivors เท่ากัน)
+            const pDmg = pSurvivors.reduce((a, b) => a + b, 0);
+            const eDmg = eSurvivors.reduce((a, b) => a + b, 0);
             
-            // แลกกันเลย!
             eHP -= pDmg;
             pHP -= eDmg;
             
-            flashDamage('e', pDmg); // บอสโดนดาเมจจากเรา
-            
-            // รอแปปนึงค่อยให้เราโดนบ้าง (จะได้เห็นชัดๆ)
-            setTimeout(() => {
-                flashDamage('p', eDmg); // เราโดนดาเมจจากบอส
-            }, 300);
-
-            highlightSurvivors('clash-slot', placedCards, pSurvivors);
-            highlightSurvivors('enemy', eDeck, eSurvivors);
+            flashDamage('e', pDmg);
+            setTimeout(() => { flashDamage('p', eDmg); }, 300);
         }
 
         updateUI();
@@ -382,89 +427,72 @@
         checkEndGame();
     }
 
-    function highlightSurvivors(className, allCards, survivorValues) {
-        if (className === 'enemy') {
-            for(let i=0; i<5; i++) {
-                const el = document.getElementById(`eCard${i}`);
-                if (!el.classList.contains('card-dead')) {
-                    el.classList.add('safe');
-                }
-            }
-        } else {
-            for(let i=0; i<5; i++) {
-                const el = document.querySelector(`.clash-slot[data-id="${i}"] div`);
-                if (el && el.style.filter === "") {
-                    el.parentElement.classList.add('active');
-                    el.parentElement.style.border = "2px solid yellow";
-                    el.parentElement.style.boxShadow = "0 0 15px yellow";
-                    el.style.color = "yellow";
-                    el.style.background = "black";
-                }
-            }
-        }
-    }
-
     function flashDamage(who, amount) {
         if(amount <= 0) return;
-        const box = document.getElementById(who === 'e' ? 'eHpBox' : 'pHpBox');
         const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
-        
         txt.textContent = "-" + amount;
         txt.classList.add('show');
-        box.style.borderColor = 'white';
-
         beep(100, 'sawtooth');
-
-        setTimeout(() => {
-            txt.classList.remove('show');
-            box.style.borderColor = who === 'e' ? '#333' : '#00ff41';
-        }, 1000);
+        setTimeout(() => { txt.classList.remove('show'); }, 1000);
     }
 
     function addX(target) {
         const x = document.createElement('div');
         x.className = 'x-mark';
         x.textContent = 'X';
-        x.style.top = '50%'; x.style.left = '50%';
-        x.style.transform = 'translate(-50%, -50%)';
-        target.style.position = 'relative'; 
         target.appendChild(x);
     }
 
     function updateUI() {
         if(pHP < 0) pHP = 0;
         if(eHP < 0) eHP = 0;
-        document.getElementById('playerHpBar').style.width = (pHP/MAX_HP)*100 + "%";
-        document.getElementById('playerHpText').textContent = pHP + "/" + MAX_HP;
-        document.getElementById('enemyHpBar').style.width = (eHP/MAX_HP)*100 + "%";
-        document.getElementById('enemyHpText').textContent = eHP + "/" + MAX_HP;
+        document.getElementById('playerHpBar').style.width = (pHP/currentMaxHP)*100 + "%";
+        document.getElementById('playerHpText').textContent = pHP + "/" + currentMaxHP;
+        document.getElementById('enemyHpBar').style.width = (eHP/currentMaxHP)*100 + "%";
+        document.getElementById('enemyHpText').textContent = eHP + "/" + currentMaxHP;
     }
 
     function checkEndGame() {
         if (pHP > 0 && eHP > 0) {
+            // ยังไม่ตาย -> รอบต่อไป
             const btn = document.getElementById('actionBtn');
             btn.textContent = "NEXT ROUND";
             btn.disabled = false;
             btn.classList.remove('attack');
-            btn.classList.add('main-btn');
             btn.onclick = nextRound;
         } else {
+            // จบเกม
             const modal = document.getElementById('resultModal');
             const title = document.getElementById('resultTitle');
             const sub = document.getElementById('resultSub');
+            const restartBtn = document.getElementById('restartBtn');
             
             if (pHP === 0 && eHP === 0) {
-                title.textContent = "SUDDEN DEATH";
+                // DOUBLE KO
+                title.textContent = "DOUBLE K.O.";
                 title.style.color = "yellow";
-                sub.textContent = "DOUBLE KO";
+                sub.textContent = "SUDDEN DEATH MODE ACTIVATED";
+                
+                // ปุ่ม Sudden Death
+                restartBtn.textContent = "SUDDEN DEATH (10 HP)";
+                restartBtn.classList.add('sudden');
+                restartBtn.onclick = () => initGame(10); // เริ่มที่ 10 เลือด
+
             } else if (pHP === 0) {
                 title.textContent = "YOU LOSE";
                 title.style.color = "red";
-                sub.textContent = "BETTER LUCK NEXT TIME";
+                sub.textContent = "";
+                restartBtn.textContent = "PLAY AGAIN";
+                restartBtn.classList.remove('sudden');
+                restartBtn.onclick = () => initGame(20);
+
             } else {
                 title.textContent = "YOU WIN!";
                 title.style.color = "#00ff41";
                 sub.textContent = "REWARD: 0.001 WLD";
+                restartBtn.textContent = "PLAY AGAIN";
+                restartBtn.classList.remove('sudden');
+                restartBtn.onclick = () => initGame(20);
             }
             modal.style.display = 'flex';
         }
@@ -475,6 +503,7 @@
         placedCards = [null, null, null, null, null];
         isPlaying = false;
         
+        // Clear Clash
         const cZone = document.getElementById('clashZone');
         cZone.innerHTML = '';
         for(let i=0; i<5; i++) {
@@ -484,15 +513,16 @@
             cZone.appendChild(slot);
         }
         
+        // Clear Enemy
         const eRow = document.getElementById('enemyCardRow');
         eRow.innerHTML = '';
         for(let i=0; i<5; i++) {
             eRow.innerHTML += `<div class="card enemy" id="eCard${i}">?</div>`;
         }
         
+        // Clear Player
         pDeck = getShuffledDeck();
         eDeck = getShuffledDeck();
-        
         const pRow = document.getElementById('playerCardRow');
         pRow.innerHTML = '';
         pDeck.forEach((val) => {
@@ -513,7 +543,7 @@
 
     function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-    initGame(); 
+    initGame(20); // เริ่มเกมปกติที่ 20
 </script>
 </body>
 </html>
