@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CYBER CARD BATTLE v18</title>
+    <title>CYBER RPG v1.6</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;600&family=Orbitron:wght@700;900&display=swap');
 
         :root {
-            --neon-orange: #ff9d00; 
+            --neon-orange: #ff9d00;
+            --neon-blue: #00eaff;
             --neon-red: #ff2a2a;
-            --neon-blue: #00eaff; /* 🔵 สีฟ้าศัตรู */
             --bg-color: #050505;
-            
-            --card-width: 54px;
-            --card-height: 76px;
-            --gap: 6px;
-            --total-width: calc((var(--card-width) * 5) + (var(--gap) * 4)); 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
@@ -30,580 +25,345 @@
             display: flex; justify-content: center; align-items: center;
         }
 
-        /* Screen Shake Animation */
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-        .shaking { animation: shake 0.5s; }
-
         .app-container {
             width: 100%; height: 100%; max-width: 480px;
             background-color: var(--bg-color);
-            
-            /* 🔴 MARK: แก้รูปพื้นหลังตรงนี้ */
-            background-image: 
-                radial-gradient(circle at 50% 10%, rgba(255, 157, 0, 0.1) 0%, transparent 70%),
-                url('https://images.unsplash.com/photo-1535868463750-c78d9543614f?q=80&w=2076');
-            
-            background-size: cover; background-position: center;
-            display: flex; flex-direction: column;
-            position: relative;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.8);
+            position: relative; display: flex; flex-direction: column;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5); overflow: hidden;
         }
 
-        /* HEADER */
-        .header {
-            height: 60px; flex-shrink: 0;
-            background: rgba(15, 15, 15, 0.95);
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 0 20px; z-index: 10;
-        }
-        .user-profile { font-family: 'Orbitron'; color: #fff; font-size: 1.1rem; letter-spacing: 1px; }
-        .user-balance { color: var(--neon-orange); font-size: 0.9rem; font-family: 'Orbitron'; }
-
-        /* BATTLE AREA */
-        .battle-area {
-            flex: 1; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center;
-            gap: 10px; padding: 10px;
-        }
-
-        .game-column { width: var(--total-width); display: flex; flex-direction: column; gap: 6px; }
-        
-        /* BOSS BANNER */
-        .boss-banner {
-            width: 100%; height: 60px;
-            border: 1px solid white; border-radius: 8px;
-            overflow: hidden; background: #000; position: relative;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        .boss-banner img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
-        .boss-banner.hit { border-color: red; animation: shake 0.2s; }
-
-        /* HP BARS */
-        .hp-wrapper { position: relative; width: 100%; margin: 2px 0; }
-        .hp-container {
-            width: 100%; height: 20px;
-            background: #222; border: 1px solid white; border-radius: 4px;
-            overflow: hidden; position: relative;
-        }
-        .hp-fill { height: 100%; width: 100%; transition: width 0.2s; }
-        .hp-enemy { background: linear-gradient(90deg, #ff3333, #aa0000); }
-        .hp-player { background: linear-gradient(90deg, #ff3333, #aa0000); } 
-        
-        .hp-text {
-            position: absolute; width: 100%; text-align: center; top: 0;
-            font-size: 12px; line-height: 20px; color: #fff; font-weight: 900; 
-            text-shadow: 1px 1px 2px black; font-family: 'Orbitron'; letter-spacing: 1px;
-        }
-
-        .dmg-float {
-            position: absolute; color: #fff; font-weight: 900; font-size: 2.5rem;
-            text-shadow: 2px 2px 0 #ff0000;
-            top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
-            opacity: 0; transition: 0.3s; z-index: 50; font-family: 'Orbitron'; pointer-events: none;
-        }
-        .dmg-float.show { opacity: 1; transform: translate(-50%, -100%) scale(1); }
-
-        /* --- 3D CARD SYSTEM --- */
-        .card-row { 
-            display: flex; gap: var(--gap); justify-content: center; width: 100%; 
-            height: 80px; margin-top: 4px;
-        }
-        
-        .card-perspective {
-            width: var(--card-width); height: var(--card-height);
-            perspective: 1000px;
-            flex-shrink: 0;
-        }
-        
-        .card-inner {
-            position: relative; width: 100%; height: 100%;
-            text-align: center; transition: transform 0.6s;
-            transform-style: preserve-3d; border-radius: 6px;
-        }
-        
-        .card-perspective.flipped .card-inner { transform: rotateY(180deg); }
-
-        .card-front, .card-back {
-            position: absolute; width: 100%; height: 100%;
-            -webkit-backface-visibility: hidden; backface-visibility: hidden;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 6px; font-family: 'Orbitron'; font-size: 1.6rem;
-            border: 1px solid white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-        }
-
-        /* 🐯 หลังไพ่ (รูปสัตว์/โปรไฟล์) */
-        .card-front {
-            background-color: #1a1a1a;
-            /* 🔴 MARK: แก้รูปหลังไพ่ตรงนี้ */
-            background-image: url('https://images.unsplash.com/photo-1615818386470-3430ee8b3079?q=80&w=200&auto=format&fit=crop'); 
-            
+        /* SCREEN MANAGER */
+        .screen {
+            position: absolute; inset: 0; display: none; flex-direction: column;
             background-size: cover; background-position: center;
         }
+        .screen.active { display: flex; }
 
-        /* หน้าไพ่ (เลข) ปกติ */
-        .card-back {
-            background: linear-gradient(135deg, #eee, #ccc);
-            color: #000; transform: rotateY(180deg); font-weight: 900;
-        }
-        
-        /* 🔵 หน้าไพ่ศัตรู (สีฟ้า) */
-        .card-perspective.flipped .card-back.enemy-revealed {
-            background: linear-gradient(135deg, var(--neon-blue), #0066cc);
-            color: #000; border: 1px solid white;
-            box-shadow: 0 0 10px var(--neon-blue);
-        }
-
-        /* --- CLASH ZONE --- */
-        .clash-zone {
-            width: var(--total-width); height: 90px;
-            display: flex; gap: var(--gap); justify-content: center; align-items: center;
-            border-top: 1px solid rgba(255,255,255,0.2); 
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-        }
-        .clash-slot {
-            width: var(--card-width); height: var(--card-height);
-            border: 1px dashed rgba(255,255,255,0.4); border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            background: transparent; position: relative; flex-shrink: 0;
-        }
-        /* Active Slot */
-        .clash-slot.active { 
-            border: 2px solid #fff; 
-            background: rgba(255, 157, 0, 0.15);
-            box-shadow: 0 0 15px rgba(255, 157, 0, 0.3);
-        }
-        
-        .clash-slot div {
-            width: 100%; height: 100%; 
-            background: linear-gradient(135deg, var(--neon-orange), #b36b00);
-            color: #000; border-radius: 4px; border: 1px solid white;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron'; font-size: 1.6rem; font-weight: 900;
-        }
-
-        /* --- STATES (V18 Update) --- */
-        
-        /* ⚡ WIN: กระพริบขอบและแสงทอง (ไม่ขยาย) */
-        @keyframes safeWinFlash {
-            0%, 100% {
-                border-color: white;
-                box-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-            }
-            50% {
-                border-color: #fff700;
-                box-shadow: 0 0 40px #fff700, inset 0 0 20px #fff700;
-            }
-        }
-        .win-pulse {
-            animation: safeWinFlash 0.6s infinite linear !important;
-            z-index: 100; position: relative;
-        }
-
-        /* 🌑 DEAD: มืดลง + อยู่นิ่งๆ (ไม่ดำสนิท ไม่หด) */
-        .dead-content {
-            filter: brightness(0.4) !important; /* ปรับลดแสง */
-            transition: filter 0.5s ease;
-        }
-
-        /* PLAYER CARDS */
-        .my-card {
-            width: var(--card-width); height: var(--card-height);
-            flex-shrink: 0;
-            border: 1px solid white; color: var(--neon-orange);
-            background: #111; cursor: pointer;
-            border-radius: 6px;
-            display: flex; align-items: center; justify-content: center;
-            font-family: 'Orbitron'; font-size: 1.6rem;
-        }
-        .my-card.selected {
-            transform: translateY(-12px);
-            background: var(--neon-orange); color: #000; border-color: white; 
-            box-shadow: 0 0 15px var(--neon-orange);
-        }
-        .my-card.used { opacity: 0; pointer-events: none; }
-
-        /* BUTTON */
-        .main-btn {
-            width: 100%; height: 50px; margin-top: 4px;
+        /* BUTTONS */
+        .btn {
             background: linear-gradient(180deg, var(--neon-orange), #d35400);
             border: 1px solid white; border-radius: 6px;
-            font-family: 'Orbitron'; font-size: 1.5rem; color: #000; font-weight: 900; letter-spacing: 2px;
-            cursor: pointer; box-shadow: 0 4px 0 #8e3200;
-            transition: 0.1s; text-transform: uppercase;
+            font-family: 'Orbitron'; color: #000; font-weight: 900;
+            cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 4px 0 #8e3200; transform: translateY(0); transition: 0.1s;
         }
-        .main-btn:active { transform: translateY(4px); box-shadow: none; }
-        .main-btn:disabled { background: #333; color: #555; border-color: #555; box-shadow: none; cursor: default; }
-        
-        .main-btn.attack { background: linear-gradient(180deg, #ff3333, #990000); color: white; box-shadow: 0 4px 0 #550000; }
-        .main-btn.sudden { background: yellow; color: black; box-shadow: 0 4px 0 #aaaa00; animation: pulse 1s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        .btn:active { transform: translateY(4px); box-shadow: none; }
+        .btn-blue { background: linear-gradient(180deg, var(--neon-blue), #0077aa); box-shadow: 0 4px 0 #004466; }
+        .btn-red { background: linear-gradient(180deg, var(--neon-red), #990000); box-shadow: 0 4px 0 #550000; color: white; }
 
-        /* NAV */
-        .nav-bar {
-            height: 60px; flex-shrink: 0;
-            background: #050505; border-top: 1px solid #333;
-            display: flex; justify-content: space-around; align-items: center; z-index: 10;
+        /* --- SCREEN 1: LOGIN --- */
+        #screen-login {
+            background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070');
+            justify-content: center; align-items: center;
         }
-        .nav-icon { font-size: 1.5rem; opacity: 0.5; cursor: pointer; color: #fff; transition: 0.3s; }
-        .nav-icon.active { opacity: 1; color: var(--neon-orange); transform: scale(1.1); text-shadow: 0 0 10px var(--neon-orange); }
+        .game-title {
+            font-family: 'Orbitron'; font-size: 3rem; text-align: center;
+            text-shadow: 0 0 20px var(--neon-orange); margin-bottom: 20px;
+            animation: glitch 1s infinite alternate;
+        }
+        @keyframes glitch { 0% { opacity: 1; transform: skew(0deg); } 20% { opacity: 0.8; transform: skew(-5deg); } 100% { opacity: 1; transform: skew(0deg); } }
 
-        /* MODAL */
-        .modal {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.92);
-            display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100;
-            backdrop-filter: blur(5px);
+        /* --- SCREEN 2: LOBBY (UPDATED v1.6) --- */
+        #screen-lobby {
+            /* ☁️ พื้นหลังธีมอ่อนสบายตา (ท้องฟ้าพาสเทล) */
+            background-image: url('https://images.unsplash.com/photo-1620641788421-7f1a91b80c00?q=80&w=1974');
         }
-        .modal h1 { font-family: 'Orbitron'; font-size: 4rem; margin: 0; text-align: center; color: white; line-height: 1; }
-        .modal p { color: #888; margin-top: 10px; font-size: 1.1rem; letter-spacing: 2px; }
         
-        .glow-text { animation: textGlow 1.5s infinite alternate; }
-        @keyframes textGlow { from { text-shadow: 0 0 10px var(--neon-orange); } to { text-shadow: 0 0 30px var(--neon-orange), 0 0 10px white; } }
+        .top-bar {
+            height: 70px; background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+            display: flex; align-items: center; padding: 0 15px; gap: 10px; flex-shrink: 0;
+        }
+        .avatar { width: 50px; height: 50px; border: 2px solid var(--neon-orange); border-radius: 50%; background: #333; overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .stats-box { flex: 1; display: flex; flex-direction: column; justify-content: center; text-shadow: 1px 1px 2px black; }
+        .player-name { font-family: 'Orbitron'; font-size: 1rem; color: var(--neon-orange); }
+        .level-badge { font-size: 0.8rem; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 5px; color: white; }
+        .exp-bar-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; margin-top: 4px; overflow: hidden; border: 1px solid #555; }
+        .exp-fill { height: 100%; background: var(--neon-blue); width: 0%; transition: width 0.5s; }
+
+        /* Banner & Ads */
+        .banner-container { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .promo-banner {
+            height: 40px; background: rgba(0,0,0,0.7); border: 1px solid var(--neon-blue);
+            display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 6px;
+        }
+        .marquee { white-space: nowrap; animation: scrollLeft 10s linear infinite; font-family: 'Orbitron'; color: var(--neon-blue); font-size: 0.8rem; }
+        @keyframes scrollLeft { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+        
+        .ad-block {
+            height: 60px; background: #222; border: 1px dashed #555; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.8rem;
+            background-image: url('https://placehold.co/400x60/000000/FFF?text=YOUR+AD+HERE');
+            background-size: cover; background-position: center; cursor: pointer;
+        }
+
+        .lobby-content { flex: 1; position: relative; }
+
+        /* 🟢 MENU STYLES (ปุ่มเมนูข้างๆ) */
+        .menu-btn { 
+            width: 60px; height: 60px; 
+            border-radius: 12px; border: 1px solid white;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; font-size: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; position: relative;
+            transition: 0.2s;
+        }
+        .menu-btn:active { transform: scale(0.95); }
+        .menu-btn span { 
+            font-size: 9px; position: absolute; bottom: 2px; width: 100%; text-align: center; 
+            font-family: 'Kanit'; font-weight: bold; text-shadow: 1px 1px 0 black; color: white;
+        }
+
+        /* 👉 ขวา: วงล้อ, บอท, กระเป๋า, และ ภารกิจ (ใหม่) */
+        .right-menu { 
+            position: absolute; right: 15px; top: 10px; 
+            display: flex; flex-direction: column; gap: 15px; align-items: flex-end; 
+        }
+
+        /* 👈 ซ้าย: ธนาคาร (ใหม่), ร้านค้า (ย้ายมา) */
+        .left-menu { 
+            position: absolute; left: 15px; top: 10px; /* ย้ายขึ้นไปข้างบนตามสั่ง */
+            display: flex; flex-direction: column; gap: 15px; 
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            height: 60px; background: #111; border-top: 2px solid #333;
+            display: flex; justify-content: space-around; align-items: center; z-index: 100; flex-shrink: 0;
+        }
+        .nav-item { flex: 1; text-align: center; color: #666; font-size: 0.8rem; font-family: 'Orbitron'; padding: 10px 0; cursor: pointer; }
+        .nav-item.active { color: white; background: rgba(255,255,255,0.1); border-top: 2px solid var(--neon-orange); margin-top: -2px; }
+        .nav-icon { font-size: 1.2rem; display: block; margin-bottom: 2px; }
+
+        /* MAP & TOWER & PVP SCREENS (คงเดิม) */
+        #screen-map { background-color: #050505; padding: 20px; overflow-y: auto; }
+        .dungeon-card { background: #111; border: 1px solid #444; border-radius: 8px; margin-bottom: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .d-info h3 { margin: 0; color: var(--neon-red); font-family: 'Orbitron'; }
+        .d-info p { margin: 5px 0 0; font-size: 0.9rem; color: #888; }
+        
+        #screen-tower { background: #000; justify-content: center; align-items: center; text-align: center; }
+        .floor-indicator { font-family: 'Orbitron'; font-size: 2rem; color: var(--neon-red); margin-bottom: 20px; }
+        .chest-box { font-size: 5rem; animation: bounce 2s infinite; cursor: pointer; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .reward-pool { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-orange); margin: 20px 0; border: 1px solid var(--neon-orange); padding: 10px; border-radius: 6px;}
+        
+        #screen-pvp { justify-content:center; align-items:center; background: #000; color: white; }
+
+        /* MODALS */
+        .modal-overlay {
+            position: absolute; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 200;
+        }
+        .modal-box {
+            background: #111; border: 1px solid white; padding: 20px; border-radius: 10px;
+            width: 80%; max-width: 320px; text-align: center; color: white;
+            box-shadow: 0 0 20px rgba(255,255,255,0.1);
+        }
+        .modal-title { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 15px; color: var(--neon-orange); }
+        
+        .mission-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .mission-desc { font-size: 0.9rem; color: #ccc; text-align: left; }
+        .btn-claim { font-size: 0.8rem; padding: 5px 10px; height: auto; }
+
+        .text-orange { color: var(--neon-orange); }
     </style>
 </head>
 <body>
-
-<div class="app-container" id="gameScreen">
-    <div class="header">
-        <div class="user-profile">PLAYER_1</div>
-        <div class="user-balance">125.00 WLD</div>
-    </div>
-
-    <div class="battle-area">
-        
-        <div class="game-column">
-            <div class="boss-banner" id="bossBanner">
-                <img src="https://i.pinimg.com/736x/87/40/2c/87402c5950cb630a91e4f4460f997235.jpg" alt="Boss">
-            </div>
-            <div class="hp-wrapper">
-                <div class="hp-container">
-                    <div class="hp-fill hp-enemy" id="enemyHpBar"></div>
-                    <div class="hp-text" id="enemyHpText">20/20</div>
-                </div>
-                <div class="dmg-float" id="eDmgText">-0</div>
-            </div>
-            <div class="card-row" id="enemyCardRow"></div>
-        </div>
-
-        <div class="clash-zone" id="clashZone"></div>
-
-        <div class="game-column player-zone">
-            <div class="hp-wrapper">
-                <div class="hp-container">
-                    <div class="hp-fill hp-player" id="playerHpBar"></div>
-                    <div class="hp-text" id="playerHpText">20/20</div>
-                </div>
-                <div class="dmg-float" id="pDmgText">-0</div>
-            </div>
-            
-            <div class="card-row" id="playerCardRow"></div>
-            
-            <button id="actionBtn" class="main-btn" onclick="initGame(20)">START GAME</button>
-        </div>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-icon active">🏠</div>
-        <div class="nav-icon">⚔️</div>
-        <div class="nav-icon">🏆</div>
-        <div class="nav-icon">⚙️</div>
-    </div>
-
-    <div id="resultModal" class="modal">
-        <h1 id="resultTitle" class="glow-text">WIN</h1>
-        <p id="resultSub">REWARD: 0.001 WLD</p>
-        <button id="restartBtn" class="main-btn" style="width:220px; margin-top:30px;" onclick="initGame(20)">PLAY AGAIN</button>
-    </div>
-</div>
-
-<script>
-    // --- CONFIG ---
-    let currentMaxHP = 20;
-    let pHP = 20, eHP = 20;
-    let pDeck = [], eDeck = [];
-    let placedCards = [null, null, null, null, null];
-    let currentTurn = 0;
-    let isPlaying = false;
-
-    // --- AUDIO ---
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     
-    function playSfx(type) {
-        if(audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        const now = audioCtx.currentTime;
-        osc.connect(gain); gain.connect(audioCtx.destination);
+    <div class="app-container">
+        <div id="screen-login" class="screen active">
+            <div class="game-title">PROJECT<br><span style="color:var(--neon-orange)">NEXUS</span></div>
+            <button class="btn" style="width: 200px; height: 50px; font-size: 1.2rem;" onclick="login()">JOIN GAME</button>
+            <div style="margin-top: 20px; color: #666; font-size: 0.8rem;">ID: GUEST_001</div>
+        </div>
 
-        if (type === 'click') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
-            gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'place') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'clash') {
-            osc.type = 'square'; osc.frequency.setValueAtTime(100, now);
-            osc.frequency.exponentialRampToValueAtTime(40, now + 0.1);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
-        } else if (type === 'hit') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
-            gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-            osc.start(now); osc.stop(now + 0.4);
-        } else if (type === 'win') {
-            osc.type = 'triangle'; 
-            osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2);
-            gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
-            osc.start(now); osc.stop(now + 0.5);
-        }
-    }
+        <div id="screen-lobby" class="screen">
+            <div class="top-bar">
+                <div class="avatar"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200" alt="Av"></div>
+                <div class="stats-box">
+                    <div><span class="player-name" id="uiName">PLAYER_1</span> <span class="level-badge" id="uiLevel">LV.1</span></div>
+                    <div class="exp-bar-bg"><div class="exp-fill" style="width: 45%;"></div></div>
+                    <div style="font-size: 0.9rem; margin-top: 2px;"><span class="text-orange" id="uiWLD">0.000</span> WLD</div>
+                </div>
+            </div>
 
-    function getShuffledDeck() { return [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5); }
+            <div class="banner-container">
+                <div class="promo-banner"><div class="marquee">🎉 EVENT: KILL BOSS GET X2 EXP! | 💎 SPECIAL OFFER: POTION 50% OFF</div></div>
+                <div class="ad-block" onclick="alert('Ads Clicked!')">
+                    <span style="background:rgba(0,0,0,0.5); padding:2px 5px; color:white;">ADVERTISEMENT</span>
+                </div>
+            </div>
 
-    function initGame(startHP) {
-        currentMaxHP = startHP; pHP = startHP; eHP = startHP;
-        currentTurn = 0; placedCards = [null, null, null, null, null]; isPlaying = false;
-        
-        document.getElementById('resultModal').style.display = 'none';
-        updateUI();
-        
-        // Render Clash Slots
-        const cZone = document.getElementById('clashZone'); cZone.innerHTML = '';
-        for(let i=0; i<5; i++) {
-            const slot = document.createElement('div');
-            slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
-            slot.dataset.id = i;
-            cZone.appendChild(slot);
-        }
+            <div class="lobby-content">
+                <div class="left-menu">
+                    <div class="menu-btn" style="border-color: #ffd700;" onclick="alert('Bank System: Coming Soon')">
+                        🏦<span>BANK</span>
+                    </div>
+                    <div class="menu-btn btn-blue" onclick="alert('Shop: Coming Soon')">
+                        🛒<span>SHOP</span>
+                    </div>
+                </div>
 
-        // Render Enemy Cards
-        const eRow = document.getElementById('enemyCardRow'); eRow.innerHTML = '';
-        for(let i=0; i<5; i++) {
-            const wrap = document.createElement('div'); wrap.className = 'card-perspective'; wrap.id = `eWrap${i}`;
-            const inner = document.createElement('div'); inner.className = 'card-inner';
-            const front = document.createElement('div'); front.className = 'card-front'; 
-            const back = document.createElement('div'); back.className = 'card-back enemy-revealed'; back.id = `eCard${i}`;
-            
-            inner.appendChild(front); inner.appendChild(back); wrap.appendChild(inner);
-            eRow.appendChild(wrap);
-        }
+                <div class="right-menu">
+                    <div class="menu-btn" onclick="openModal('modal-wheel')">🎡<span>WHEEL</span></div>
+                    <div class="menu-btn" onclick="startBotMode()">🤖<span>VS BOT</span></div>
+                    <div class="menu-btn">🎒<span>BAG</span></div>
+                    
+                    <div class="menu-btn" style="border-color: var(--neon-orange);" onclick="openModal('modal-mission')">
+                        💵<span>CLAIM</span>
+                    </div>
+                </div>
+            </div>
 
-        // Render Player Cards
-        pDeck = getShuffledDeck(); eDeck = getShuffledDeck();
-        const pRow = document.getElementById('playerCardRow'); pRow.innerHTML = '';
-        pDeck.forEach((val) => {
-            const card = document.createElement('div');
-            card.className = 'card my-card';
-            card.textContent = val;
-            card.onclick = () => playCard(val, card);
-            pRow.appendChild(card);
-        });
+            <div class="bottom-nav">
+                <div class="nav-item active" onclick="nav('home')"><span class="nav-icon">🏠</span>HOME</div>
+                <div class="nav-item" onclick="nav('map')"><span class="nav-icon">🗺️</span>MAP</div>
+                <div class="nav-item" onclick="nav('pvp')"><span class="nav-icon">⚔️</span>BATTLE</div>
+            </div>
+        </div>
 
-        const btn = document.getElementById('actionBtn');
-        btn.textContent = "SELECT CARDS"; btn.disabled = true; btn.className = 'main-btn';
-        playSfx('place');
-    }
+        <div id="screen-map" class="screen">
+            <h1 style="text-align: center; font-family: 'Orbitron'; margin-bottom: 30px; color:white;">WORLD MAP</h1>
+            <div class="dungeon-card">
+                <div class="d-info"><h3>TIER 1: SEWERS</h3><p>Monsters: Slime, Rat</p><p class="text-orange">Max Reward: 0.005 WLD</p></div>
+                <button class="btn" onclick="enterDungeon(0)">ENTER<br><span style="font-size:0.8rem">0.001 WLD</span></button>
+            </div>
+            <div class="dungeon-card">
+                <div class="d-info"><h3>TIER 2: FACTORY</h3><p>Monsters: Robot, Drone</p><p class="text-orange">Max Reward: 0.05 WLD</p></div>
+                <button class="btn" onclick="enterDungeon(1)">ENTER<br><span style="font-size:0.8rem">0.01 WLD</span></button>
+            </div>
+            <div class="dungeon-card" style="opacity: 0.5;">
+                <div class="d-info"><h3>TIER 3: CORE</h3><p>LOCKED (LV.10)</p></div>
+                <button class="btn" disabled style="background:#333; border-color:#555; color:#777;">LOCKED</button>
+            </div>
+            <button class="btn btn-blue" style="width: 100%; margin-top: 20px;" onclick="nav('home')">BACK TO LOBBY</button>
+        </div>
 
-    function playCard(val, el) {
-        if(isPlaying || currentTurn >= 5 || el.classList.contains('used')) return;
+        <div id="screen-tower" class="screen">
+            <div class="floor-indicator" id="floorText">FLOOR 1</div>
+            <div style="margin-bottom: 20px;"><img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" width="100" style="filter: invert(1);"></div>
+            <div class="reward-pool">POOL: <span id="poolText">0.000</span> WLD</div>
+            <button class="btn btn-red" style="width: 200px; height: 60px; font-size: 1.5rem;" onclick="fight()">⚔️ FIGHT ⚔️</button>
+            <br><br>
+            <button class="btn btn-blue" style="width: 150px;" onclick="quitDungeon()">RUN AWAY (CLAIM)</button>
+        </div>
 
-        placedCards[currentTurn] = val;
-        playSfx('click');
-        
-        const slot = document.querySelector(`.clash-slot[data-id="${currentTurn}"]`);
-        slot.innerHTML = `<div>${val}</div>`;
-        slot.classList.remove('active');
-        
-        el.classList.add('used');
-        
-        currentTurn++;
-        if(currentTurn < 5) {
-            document.querySelector(`.clash-slot[data-id="${currentTurn}"]`).classList.add('active');
-            setTimeout(() => playSfx('place'), 50);
-        } else {
-            const btn = document.getElementById('actionBtn');
-            btn.textContent = "ATTACK !!!"; btn.disabled = false;
-            btn.classList.add('attack'); btn.onclick = startBattle;
-        }
-    }
+        <div id="screen-pvp" class="screen">
+            <h1 style="font-family:'Orbitron';">PVP ARENA</h1>
+            <h2 class="text-orange">COMING SOON</h2>
+            <button class="btn" onclick="nav('home')">BACK</button>
+        </div>
 
-    async function startBattle() {
-        isPlaying = true;
-        document.getElementById('actionBtn').disabled = true;
+        <div id="modal-wheel" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-title">LUCKY WHEEL</div>
+                <div style="width:100px; height:100px; border-radius:50%; border:4px dashed var(--neon-orange); margin: 20px auto; animation: spin 2s linear infinite;"></div>
+                <p>Cooldown: 24:00:00</p>
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn" onclick="spinWheel(true)">FREE SPIN</button>
+                    <button class="btn btn-blue" onclick="spinWheel(false)">BUY (0.01)</button>
+                </div>
+                <br><button class="btn btn-red" onclick="closeModal('modal-wheel')">CLOSE</button>
+            </div>
+        </div>
 
-        let pSurvivors = []; 
-        let eSurvivors = []; 
+        <div id="modal-mission" class="modal-overlay">
+            <div class="modal-box">
+                <div class="modal-title">DAILY MISSIONS</div>
+                <div class="mission-row">
+                    <div class="mission-desc">Login Daily</div>
+                    <button class="btn btn-claim" onclick="alert('Claimed 0.001 WLD!')">GET</button>
+                </div>
+                <div class="mission-row">
+                    <div class="mission-desc">Win 1 Battle</div>
+                    <button class="btn btn-claim" disabled style="background:#333; border:none; color:#555;">0/1</button>
+                </div>
+                <div class="mission-row">
+                    <div class="mission-desc">Spend 0.1 WLD</div>
+                    <button class="btn btn-claim" disabled style="background:#333; border:none; color:#555;">0/0.1</button>
+                </div>
+                <br><button class="btn btn-red" onclick="closeModal('modal-mission')">CLOSE</button>
+            </div>
+        </div>
 
-        for(let i=0; i<5; i++) {
-            const eVal = eDeck[i]; const pVal = placedCards[i];
-            
-            // FLIP CARD
-            const eWrap = document.getElementById(`eWrap${i}`);
-            const eBack = document.getElementById(`eCard${i}`);
-            eBack.textContent = eVal;
-            eWrap.classList.add('flipped');
-            playSfx('place');
-            
-            await sleep(800);
+        <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+    </div>
 
-            const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
-            const pCard = pSlot.querySelector('div');
+    <script>
+        // --- DATA ---
+        let player = { name: "PLAYER_1", level: 1, exp: 0, wld: 10.000 };
+        let dungeonState = { active: false, tier: 0, floor: 1, pool: 0.0, rewards: [] };
+        const tier1Rewards = [0.001, 0.002, 0.003, 0.005]; 
 
-            // Compare Logic & V18 States
-            if (pVal > eVal) {
-                // Player Win -> Enemy Dies
-                eBack.classList.add('dead-content');
-                pCard.parentElement.classList.add('win-pulse');
-                pSurvivors.push({val: pVal, idx: i});
-            } else if (eVal > pVal) {
-                // Enemy Win -> Player Dies
-                pCard.classList.add('dead-content');
-                eBack.classList.add('win-pulse');
-                eSurvivors.push({val: eVal, idx: i});
-            } else {
-                // Draw -> Both Die
-                eBack.classList.add('dead-content');
-                pCard.classList.add('dead-content');
-            }
-            playSfx('clash');
-            await sleep(500);
+        // --- CORE FUNCTIONS ---
+        function updateUI() {
+            document.getElementById('uiName').innerText = player.name;
+            document.getElementById('uiLevel').innerText = "LV." + player.level;
+            document.getElementById('uiWLD').innerText = player.wld.toFixed(3);
         }
 
-        // Damage Calculation
-        const pCount = pSurvivors.length;
-        const eCount = eSurvivors.length;
-        await sleep(300);
-
-        if (pCount > eCount) {
-            const dmg = pSurvivors.reduce((a, b) => a + b.val, 0);
-            eHP -= dmg; flashDamage('e', dmg);
-        } else if (eCount > pCount) {
-            const dmg = eSurvivors.reduce((a, b) => a + b.val, 0);
-            pHP -= dmg; flashDamage('p', dmg);
-        } else {
-            // Draw - Exchange
-            const pDmg = pSurvivors.reduce((a, b) => a + b.val, 0);
-            const eDmg = eSurvivors.reduce((a, b) => a + b.val, 0);
-            eHP -= pDmg; pHP -= eDmg;
-            flashDamage('e', pDmg); 
-            setTimeout(() => flashDamage('p', eDmg), 300);
+        function switchScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
 
-        updateUI();
-        await sleep(1500);
-        checkEndGame();
-    }
+        function login() { switchScreen('screen-lobby'); updateUI(); }
 
-    function flashDamage(who, amount) {
-        if(amount <= 0) return;
-        const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
-        txt.textContent = "-" + amount;
-        txt.classList.add('show');
-        
-        document.getElementById('gameScreen').classList.add('shaking');
-        if(who === 'e') document.querySelector('.boss-banner').classList.add('hit');
-        
-        playSfx('hit');
-
-        setTimeout(() => { 
-            txt.classList.remove('show'); 
-            document.getElementById('gameScreen').classList.remove('shaking');
-            document.querySelector('.boss-banner').classList.remove('hit');
-        }, 800);
-    }
-
-    function updateUI() {
-        if(pHP < 0) pHP = 0; if(eHP < 0) eHP = 0;
-        document.getElementById('playerHpBar').style.width = (pHP/currentMaxHP)*100 + "%";
-        document.getElementById('playerHpText').textContent = pHP + "/" + currentMaxHP;
-        document.getElementById('enemyHpBar').style.width = (eHP/currentMaxHP)*100 + "%";
-        document.getElementById('enemyHpText').textContent = eHP + "/" + currentMaxHP;
-    }
-
-    function checkEndGame() {
-        if (pHP > 0 && eHP > 0) {
-            const btn = document.getElementById('actionBtn');
-            btn.textContent = "NEXT ROUND"; btn.disabled = false;
-            btn.classList.remove('attack'); btn.classList.add('main-btn');
-            btn.onclick = nextRound;
-        } else {
-            playSfx('win');
-            const modal = document.getElementById('resultModal');
-            const title = document.getElementById('resultTitle');
-            const sub = document.getElementById('resultSub');
-            const btn = document.getElementById('restartBtn');
-            
-            if (pHP === 0 && eHP === 0) {
-                title.textContent = "DOUBLE KO"; title.style.color = "yellow";
-                sub.textContent = "SUDDEN DEATH MODE";
-                btn.textContent = "SUDDEN DEATH (10 HP)";
-                btn.classList.add('sudden');
-                btn.onclick = () => initGame(10);
-            } else if (pHP === 0) {
-                title.textContent = "YOU LOSE"; title.style.color = "red";
-                sub.textContent = "TRY AGAIN";
-                btn.textContent = "RESTART"; btn.classList.remove('sudden');
-                btn.onclick = () => initGame(20);
-            } else {
-                title.textContent = "VICTORY"; title.style.color = "#ff9d00";
-                sub.textContent = "REWARD: 0.001 WLD";
-                btn.textContent = "PLAY AGAIN"; btn.classList.remove('sudden');
-                btn.onclick = () => initGame(20);
-            }
-            modal.style.display = 'flex';
-        }
-    }
-
-    function nextRound() {
-        currentTurn = 0; placedCards = [null,null,null,null,null]; isPlaying = false;
-        
-        const cZone = document.getElementById('clashZone'); cZone.innerHTML = '';
-        for(let i=0; i<5; i++) {
-            const slot = document.createElement('div');
-            slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
-            slot.dataset.id = i;
-            cZone.appendChild(slot);
-        }
-        
-        const eRow = document.getElementById('enemyCardRow'); eRow.innerHTML = '';
-        for(let i=0; i<5; i++) {
-            const wrap = document.createElement('div'); wrap.className = 'card-perspective'; wrap.id = `eWrap${i}`;
-            const inner = document.createElement('div'); inner.className = 'card-inner';
-            const front = document.createElement('div'); front.className = 'card-front'; 
-            const back = document.createElement('div'); back.className = 'card-back enemy-revealed'; back.id = `eCard${i}`;
-            inner.appendChild(front); inner.appendChild(back); wrap.appendChild(inner);
-            eRow.appendChild(wrap);
+        function nav(page) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(page === 'home') { switchScreen('screen-lobby'); document.querySelectorAll('.nav-item')[0].classList.add('active'); }
+            else if (page === 'map') { switchScreen('screen-map'); document.querySelectorAll('.nav-item')[1].classList.add('active'); }
+            else if (page === 'pvp') { switchScreen('screen-pvp'); document.querySelectorAll('.nav-item')[2].classList.add('active'); }
         }
 
-        pDeck = getShuffledDeck(); eDeck = getShuffledDeck();
-        const pRow = document.getElementById('playerCardRow'); pRow.innerHTML = '';
-        pDeck.forEach((val) => {
-            const card = document.createElement('div');
-            card.className = 'card my-card';
-            card.textContent = val;
-            card.onclick = () => playCard(val, card);
-            pRow.appendChild(card);
-        });
+        // --- DUNGEON ---
+        function enterDungeon(tierIndex) {
+            let cost = tierIndex === 0 ? 0.001 : 0.01;
+            if(player.wld >= cost) {
+                player.wld -= cost; updateUI();
+                dungeonState.active = true; dungeonState.tier = tierIndex; dungeonState.floor = 1; dungeonState.pool = 0.0; 
+                dungeonState.rewards = tierIndex === 0 ? tier1Rewards : tier1Rewards.map(x => x*10); 
+                startFloor(); switchScreen('screen-tower');
+            } else { alert("NOT ENOUGH WLD!"); }
+        }
 
-        const btn = document.getElementById('actionBtn');
-        btn.textContent = "SELECT CARDS"; btn.disabled = true; btn.onclick = null;
-        playSfx('place');
-    }
+        function startFloor() {
+            document.getElementById('floorText').innerText = "FLOOR " + dungeonState.floor + "/4";
+            document.getElementById('poolText').innerText = dungeonState.pool.toFixed(3);
+        }
 
-    function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+        function fight() {
+            let isWin = Math.random() > 0.3; 
+            alert("ENTERING BATTLE... (เชื่อม V18 ตรงนี้)");
+            if (isWin) {
+                let rewardThisFloor = dungeonState.rewards[dungeonState.floor - 1];
+                dungeonState.pool += rewardThisFloor;
+                alert(`VICTORY! Found ${rewardThisFloor} WLD.`);
+                if (dungeonState.floor < 4) {
+                    let next = confirm(`CURRENT POOL: ${dungeonState.pool.toFixed(3)}\nGo to FLOOR ${dungeonState.floor+1}?`);
+                    if(next) { dungeonState.floor++; startFloor(); } else { claimAndExit(1); }
+                } else { alert("TOWER CLEARED!"); claimAndExit(1); }
+            } else { alert("YOU DIED! Rewards halved."); claimAndExit(0.5); }
+        }
 
-    initGame(20);
-</script>
+        function quitDungeon() { if(confirm("Retreat now?")) claimAndExit(1); }
+
+        function claimAndExit(multiplier) {
+            let finalReward = dungeonState.pool * multiplier;
+            player.wld += finalReward;
+            alert(`DUNGEON ENDED.\nTotal Reward: ${finalReward.toFixed(3)} WLD`);
+            dungeonState.active = false; updateUI(); nav('map');
+        }
+
+        function startBotMode() { alert("VS BOT Mode"); }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        
+        function spinWheel(isFree) {
+            if(!isFree && player.wld < 0.01) { alert("Not enough WLD!"); return; }
+            if(!isFree) { player.wld -= 0.01; updateUI(); }
+            alert("Spinning... Got Item!"); closeModal('modal-wheel');
+        }
+    </script>
 </body>
 </html>
