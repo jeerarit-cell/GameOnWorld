@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CYBER RPG v1.6</title>
+    <title>CYBER RPG v2.3 (UI Upgrade)</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;600&family=Orbitron:wght@700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=Orbitron:wght@700;900&display=swap');
 
         :root {
             --neon-orange: #ff9d00;
             --neon-blue: #00eaff;
             --neon-red: #ff2a2a;
-            --bg-color: #050505;
+            --bg-dark: #050505;
+            --bg-white: #f8f9fa;
+            --card-width: 54px;
+            --card-height: 76px;
+            --gap: 6px;
+            --total-width: calc((var(--card-width) * 5) + (var(--gap) * 4));
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
@@ -27,343 +32,655 @@
 
         .app-container {
             width: 100%; height: 100%; max-width: 480px;
-            background-color: var(--bg-color);
+            background-color: var(--bg-dark);
             position: relative; display: flex; flex-direction: column;
             box-shadow: 0 0 50px rgba(0,0,0,0.5); overflow: hidden;
         }
 
-        /* SCREEN MANAGER */
-        .screen {
-            position: absolute; inset: 0; display: none; flex-direction: column;
-            background-size: cover; background-position: center;
-        }
-        .screen.active { display: flex; }
+        .screen { position: absolute; inset: 0; display: none; flex-direction: column; background-size: cover; background-position: center; }
+        .screen.active { display: flex; z-index: 999; }
+        .screen-white { background-color: var(--bg-white) !important; color: #333; padding: 20px; overflow-y: auto; background-image: none !important; }
 
-        /* BUTTONS */
-        .btn {
-            background: linear-gradient(180deg, var(--neon-orange), #d35400);
-            border: 1px solid white; border-radius: 6px;
-            font-family: 'Orbitron'; color: #000; font-weight: 900;
-            cursor: pointer; text-transform: uppercase;
-            box-shadow: 0 4px 0 #8e3200; transform: translateY(0); transition: 0.1s;
-        }
-        .btn:active { transform: translateY(4px); box-shadow: none; }
-        .btn-blue { background: linear-gradient(180deg, var(--neon-blue), #0077aa); box-shadow: 0 4px 0 #004466; }
-        .btn-red { background: linear-gradient(180deg, var(--neon-red), #990000); box-shadow: 0 4px 0 #550000; color: white; }
+        /* --- BACKGROUNDS --- */
+        #screen-login { background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070'); }
+        #screen-lobby { background-image: url('https://github.com/user-attachments/assets/2919ee1f-6eb5-4139-ae6c-72aeaa83c89f'); }
 
-        /* --- SCREEN 1: LOGIN --- */
-        #screen-login {
-            background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070');
-            justify-content: center; align-items: center;
-        }
-        .game-title {
-            font-family: 'Orbitron'; font-size: 3rem; text-align: center;
-            text-shadow: 0 0 20px var(--neon-orange); margin-bottom: 20px;
-            animation: glitch 1s infinite alternate;
-        }
-        @keyframes glitch { 0% { opacity: 1; transform: skew(0deg); } 20% { opacity: 0.8; transform: skew(-5deg); } 100% { opacity: 1; transform: skew(0deg); } }
-
-        /* --- SCREEN 2: LOBBY (UPDATED v1.6) --- */
-        #screen-lobby {
-            /* ☁️ พื้นหลังธีมอ่อนสบายตา (ท้องฟ้าพาสเทล) */
-            background-image: url('https://images.unsplash.com/photo-1620641788421-7f1a91b80c00?q=80&w=1974');
-        }
+        /* --- GLOBAL UI --- */
+        .white-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-top: 5px; color: #333; }
+        .close-btn { font-size: 1.5rem; color: #aaa; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background:rgba(255,255,255,0.1); backdrop-filter:blur(5px); }
+        .btn { background: linear-gradient(180deg, var(--neon-orange), #d35400); border: none; border-radius: 8px; color: #fff; font-weight: 600; cursor: pointer; padding: 10px; width:100%; font-family: 'Kanit'; }
         
-        .top-bar {
-            height: 70px; background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
-            display: flex; align-items: center; padding: 0 15px; gap: 10px; flex-shrink: 0;
+        /* AD BANNER */
+        .ad-banner {
+            width: 100%; max-width: 320px; height: 100px;
+            background: #222; margin: 10px auto;
+            border-radius: 8px; border: 1px solid #444;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; position: relative;
         }
+        .ad-banner img { width: 100%; height: 100%; object-fit: cover; }
+        .ad-tag { position: absolute; top: 0; right: 0; background: rgba(0,0,0,0.5); color: white; font-size: 0.6rem; padding: 2px 5px; }
+
+        /* INFO CARDS */
+        .info-card { background: white; border-radius: 16px; padding: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 15px; border: 1px solid #eee; }
+        .item-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .shop-item { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 10px; text-align: center; }
+        .shop-img { width: 60px; height: 60px; object-fit: contain; margin-bottom: 5px; }
+        .mission-row { display: flex; align-items: center; justify-content: space-between; background: #fff; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .m-btn-claim { background: #2ecc71; color: white; border: none; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; }
+        .m-btn-claim:disabled { background: #ccc; cursor: default; }
+
+        /* LOBBY UI */
+        .top-bar { height: 70px; background: linear-gradient(180deg, rgba(0,0,0,0.6), transparent); display: flex; align-items: center; padding: 0 15px; gap: 10px; flex-shrink: 0; color: white; text-shadow: 1px 1px 2px black; }
         .avatar { width: 50px; height: 50px; border: 2px solid var(--neon-orange); border-radius: 50%; background: #333; overflow: hidden; }
         .avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .stats-box { flex: 1; display: flex; flex-direction: column; justify-content: center; text-shadow: 1px 1px 2px black; }
-        .player-name { font-family: 'Orbitron'; font-size: 1rem; color: var(--neon-orange); }
-        .level-badge { font-size: 0.8rem; background: #333; padding: 2px 6px; border-radius: 4px; margin-left: 5px; color: white; }
-        .exp-bar-bg { width: 100%; height: 6px; background: rgba(0,0,0,0.5); border-radius: 3px; margin-top: 4px; overflow: hidden; border: 1px solid #555; }
-        .exp-fill { height: 100%; background: var(--neon-blue); width: 0%; transition: width 0.5s; }
-
-        /* Banner & Ads */
-        .banner-container { padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-        .promo-banner {
-            height: 40px; background: rgba(0,0,0,0.7); border: 1px solid var(--neon-blue);
-            display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 6px;
-        }
-        .marquee { white-space: nowrap; animation: scrollLeft 10s linear infinite; font-family: 'Orbitron'; color: var(--neon-blue); font-size: 0.8rem; }
-        @keyframes scrollLeft { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
         
-        .ad-block {
-            height: 60px; background: #222; border: 1px dashed #555; border-radius: 6px;
-            display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.8rem;
-            background-image: url('https://placehold.co/400x60/000000/FFF?text=YOUR+AD+HERE');
-            background-size: cover; background-position: center; cursor: pointer;
-        }
-
         .lobby-content { flex: 1; position: relative; }
-
-        /* 🟢 MENU STYLES (ปุ่มเมนูข้างๆ) */
+        
+        /* 🔧 BIG BUTTONS UPDATE */
         .menu-btn { 
-            width: 60px; height: 60px; 
-            border-radius: 12px; border: 1px solid white;
-            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center; font-size: 2rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3); cursor: pointer; position: relative;
+            width: 75px; height: 75px; /* Bigger Size */
+            border-radius: 18px; 
+            border: 2px solid white; 
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); 
+            display: flex; align-items: center; justify-content: center; 
+            font-size: 2.2rem; /* Bigger Icon */
+            position: relative; cursor: pointer; 
+            margin-bottom: 25px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+        }
+        .menu-btn span { font-size: 11px; position: absolute; bottom: 4px; width: 100%; text-align: center; font-family: 'Kanit'; font-weight: bold; color: white; text-shadow: 1px 1px 1px black; }
+        
+        /* 🔧 PUSH DOWN UPDATE */
+        .left-menu { position: absolute; left: 20px; top: 40px; } /* Pushed Down */
+        .right-menu { position: absolute; right: 20px; top: 40px; } /* Pushed Down */
+
+        /* 🔧 FLOATING NAV UPDATE */
+        .bottom-nav { 
+            height: 80px; /* Taller */
+            background: #fff; /* White bg */
+            margin: 0 15px 25px 15px; /* Floating margin */
+            border-radius: 20px; /* Rounded corners */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: flex; justify-content: space-around; align-items: center; 
+            z-index: 100; flex-shrink: 0; 
+        }
+        .nav-item { 
+            flex: 1; text-align: center; 
+            color: #999; /* Grey inactive */
+            font-size: 0.9rem; /* Bigger text */
+            font-family: 'Orbitron'; cursor: pointer; 
             transition: 0.2s;
         }
-        .menu-btn:active { transform: scale(0.95); }
-        .menu-btn span { 
-            font-size: 9px; position: absolute; bottom: 2px; width: 100%; text-align: center; 
-            font-family: 'Kanit'; font-weight: bold; text-shadow: 1px 1px 0 black; color: white;
+        .nav-item div { font-size: 1.8rem; margin-bottom: 2px; } /* Bigger Icons */
+        .nav-item.active { 
+            color: var(--neon-orange); /* Orange active */
+            transform: translateY(-2px);
+            font-weight: bold;
+            border: none; margin: 0; /* Remove old border */
         }
 
-        /* 👉 ขวา: วงล้อ, บอท, กระเป๋า, และ ภารกิจ (ใหม่) */
-        .right-menu { 
-            position: absolute; right: 15px; top: 10px; 
-            display: flex; flex-direction: column; gap: 15px; align-items: flex-end; 
-        }
+        .marquee-container { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-blue); border-radius: 4px; height: 30px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; position: relative; margin: 10px 10px 0 10px; }
+        .marquee-text { display: inline-block; padding-left: 100%; animation: scroll-left 15s linear infinite; color: var(--neon-blue); font-size: 0.8rem; font-family: 'Kanit'; }
+        @keyframes scroll-left { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
 
-        /* 👈 ซ้าย: ธนาคาร (ใหม่), ร้านค้า (ย้ายมา) */
-        .left-menu { 
-            position: absolute; left: 15px; top: 10px; /* ย้ายขึ้นไปข้างบนตามสั่ง */
-            display: flex; flex-direction: column; gap: 15px; 
-        }
+        /* MAP UI */
+        .monster-card { border-radius: 12px; margin-bottom: 10px; padding: 12px; display: flex; align-items: center; justify-content: space-between; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.3); cursor: pointer; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); transition: transform 0.1s; }
+        .monster-card:active { transform: scale(0.98); }
+        .rank-common { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
+        .rank-miniboss { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid var(--neon-blue); }
+        .rank-boss { background: linear-gradient(135deg, #8E0E00, #1F1C18); border: 2px solid #ffd700; }
+        .m-avatar { width: 50px; height: 50px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); object-fit: cover; margin-right: 15px; }
+        .m-info h3 { margin: 0; font-family: 'Orbitron'; font-size: 1rem; }
+        .hp-badge { background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-family: 'Orbitron'; border: 1px solid rgba(255,255,255,0.2); min-width: 60px; text-align: center; }
 
-        /* Bottom Nav */
-        .bottom-nav {
-            height: 60px; background: #111; border-top: 2px solid #333;
-            display: flex; justify-content: space-around; align-items: center; z-index: 100; flex-shrink: 0;
-        }
-        .nav-item { flex: 1; text-align: center; color: #666; font-size: 0.8rem; font-family: 'Orbitron'; padding: 10px 0; cursor: pointer; }
-        .nav-item.active { color: white; background: rgba(255,255,255,0.1); border-top: 2px solid var(--neon-orange); margin-top: -2px; }
-        .nav-icon { font-size: 1.2rem; display: block; margin-bottom: 2px; }
-
-        /* MAP & TOWER & PVP SCREENS (คงเดิม) */
-        #screen-map { background-color: #050505; padding: 20px; overflow-y: auto; }
-        .dungeon-card { background: #111; border: 1px solid #444; border-radius: 8px; margin-bottom: 15px; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .d-info h3 { margin: 0; color: var(--neon-red); font-family: 'Orbitron'; }
-        .d-info p { margin: 5px 0 0; font-size: 0.9rem; color: #888; }
-        
-        #screen-tower { background: #000; justify-content: center; align-items: center; text-align: center; }
-        .floor-indicator { font-family: 'Orbitron'; font-size: 2rem; color: var(--neon-red); margin-bottom: 20px; }
-        .chest-box { font-size: 5rem; animation: bounce 2s infinite; cursor: pointer; }
-        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-        .reward-pool { font-family: 'Orbitron'; font-size: 1.5rem; color: var(--neon-orange); margin: 20px 0; border: 1px solid var(--neon-orange); padding: 10px; border-radius: 6px;}
-        
-        #screen-pvp { justify-content:center; align-items:center; background: #000; color: white; }
-
-        /* MODALS */
-        .modal-overlay {
-            position: absolute; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 200;
-        }
-        .modal-box {
-            background: #111; border: 1px solid white; padding: 20px; border-radius: 10px;
-            width: 80%; max-width: 320px; text-align: center; color: white;
-            box-shadow: 0 0 20px rgba(255,255,255,0.1);
-        }
-        .modal-title { font-family: 'Orbitron'; font-size: 1.5rem; margin-bottom: 15px; color: var(--neon-orange); }
-        
-        .mission-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .mission-desc { font-size: 0.9rem; color: #ccc; text-align: left; }
-        .btn-claim { font-size: 0.8rem; padding: 5px 10px; height: auto; }
-
-        .text-orange { color: var(--neon-orange); }
+        /* BATTLE CSS */
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+        .shaking { animation: shake 0.5s; }
+        .battle-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 10px; }
+        .game-column { width: var(--total-width); display: flex; flex-direction: column; gap: 6px; }
+        .boss-banner { width: 100%; height: 80px; border: 1px solid white; border-radius: 8px; overflow: hidden; background: #000; position: relative; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        .boss-banner img { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+        .boss-banner.hit { border-color: red; animation: shake 0.2s; }
+        .hp-wrapper { position: relative; width: 100%; margin: 2px 0; }
+        .hp-container { width: 100%; height: 20px; background: #222; border: 1px solid white; border-radius: 4px; overflow: hidden; position: relative; }
+        .hp-fill { height: 100%; width: 100%; transition: width 0.2s; }
+        .hp-enemy { background: linear-gradient(90deg, #ff3333, #aa0000); }
+        .hp-player { background: linear-gradient(90deg, #00eaff, #0066cc); }
+        .hp-text { position: absolute; width: 100%; text-align: center; top: 0; font-size: 12px; line-height: 20px; color: #fff; font-weight: 900; text-shadow: 1px 1px 2px black; font-family: 'Orbitron'; letter-spacing: 1px; }
+        .dmg-float { position: absolute; color: #fff; font-weight: 900; font-size: 2.5rem; text-shadow: 2px 2px 0 #ff0000; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); opacity: 0; transition: 0.3s; z-index: 50; font-family: 'Orbitron'; pointer-events: none; }
+        .dmg-float.show { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+        .card-row { display: flex; gap: var(--gap); justify-content: center; width: 100%; height: 80px; margin-top: 4px; }
+        .card-perspective { width: var(--card-width); height: var(--card-height); perspective: 1000px; flex-shrink: 0; }
+        .card-inner { position: relative; width: 100%; height: 100%; text-align: center; transition: transform 0.6s; transform-style: preserve-3d; border-radius: 6px; }
+        .card-perspective.flipped .card-inner { transform: rotateY(180deg); }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-family: 'Orbitron'; font-size: 1.6rem; border: 1px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.5); }
+        .card-front { background-color: #1a1a1a; background-image: url('https://images.unsplash.com/photo-1615818386470-3430ee8b3079?q=80&w=200'); background-size: cover; background-position: center; }
+        .card-back { background: linear-gradient(135deg, #eee, #ccc); color: #000; transform: rotateY(180deg); font-weight: 900; }
+        .card-perspective.flipped .card-back.enemy-revealed { background: linear-gradient(135deg, var(--neon-red), #990000); color: white; border: 1px solid white; box-shadow: 0 0 10px var(--neon-red); }
+        .clash-zone { width: var(--total-width); height: 90px; display: flex; gap: var(--gap); justify-content: center; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .clash-slot { width: var(--card-width); height: var(--card-height); border: 1px dashed rgba(255,255,255,0.4); border-radius: 6px; display: flex; align-items: center; justify-content: center; background: transparent; position: relative; flex-shrink: 0; }
+        .clash-slot.active { border: 2px solid #fff; background: rgba(0, 234, 255, 0.15); box-shadow: 0 0 15px rgba(0, 234, 255, 0.3); }
+        .clash-slot div { width: 100%; height: 100%; background: linear-gradient(135deg, var(--neon-orange), #b36b00); color: #000; border-radius: 4px; border: 1px solid white; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 1.6rem; font-weight: 900; }
+        .my-card { width: var(--card-width); height: var(--card-height); flex-shrink: 0; border: 1px solid white; color: var(--neon-orange); background: #111; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 1.6rem; }
+        .my-card.selected { transform: translateY(-12px); background: var(--neon-orange); color: #000; border-color: white; box-shadow: 0 0 15px var(--neon-orange); }
+        .my-card.used { opacity: 0; pointer-events: none; }
+        .main-btn { width: 100%; height: 50px; margin-top: 4px; background: linear-gradient(180deg, var(--neon-blue), #0066cc); border: 1px solid white; border-radius: 6px; font-family: 'Orbitron'; font-size: 1.2rem; color: #fff; font-weight: 900; letter-spacing: 2px; cursor: pointer; box-shadow: 0 4px 0 #004488; transition: 0.1s; text-transform: uppercase; }
+        .main-btn:active { transform: translateY(4px); box-shadow: none; }
+        .main-btn:disabled { background: #333; color: #555; border-color: #555; box-shadow: none; cursor: default; }
+        .main-btn.attack { background: linear-gradient(180deg, #ff3333, #990000); color: white; box-shadow: 0 4px 0 #550000; }
+        .main-btn.sudden { background: yellow; color: black; box-shadow: 0 4px 0 #aaaa00; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+        @keyframes safeWinFlash { 0%, 100% { border-color: white; box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); } 50% { border-color: #fff700; box-shadow: 0 0 40px #fff700, inset 0 0 20px #fff700; } }
+        .win-pulse { animation: safeWinFlash 0.6s infinite linear !important; z-index: 100; position: relative; }
+        .dead-content { filter: brightness(0.4) !important; transition: filter 0.5s ease; }
+        .modal { position: absolute; inset: 0; background: rgba(0,0,0,0.92); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); }
+        .glow-text { animation: textGlow 1.5s infinite alternate; font-family: 'Orbitron'; font-size: 3rem; color:white; }
+        @keyframes textGlow { from { text-shadow: 0 0 10px var(--neon-orange); } to { text-shadow: 0 0 30px var(--neon-orange), 0 0 10px white; } }
     </style>
 </head>
 <body>
     
     <div class="app-container">
-        <div id="screen-login" class="screen active">
-            <div class="game-title">PROJECT<br><span style="color:var(--neon-orange)">NEXUS</span></div>
-            <button class="btn" style="width: 200px; height: 50px; font-size: 1.2rem;" onclick="login()">JOIN GAME</button>
-            <div style="margin-top: 20px; color: #666; font-size: 0.8rem;">ID: GUEST_001</div>
+        
+        <div id="screen-login" class="screen active" style="justify-content: center; align-items: center;">
+            <div style="font-family: 'Orbitron'; font-size: 3rem; text-align: center; color:white; text-shadow: 0 0 20px var(--neon-orange); margin-bottom: 20px;">
+                PROJECT<br><span style="color:var(--neon-orange)">NEXUS</span>
+            </div>
+            <button class="btn" style="width: 200px;" onclick="startGameAndAudio()">JOIN GAME</button>
         </div>
 
         <div id="screen-lobby" class="screen">
             <div class="top-bar">
-                <div class="avatar"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200" alt="Av"></div>
-                <div class="stats-box">
-                    <div><span class="player-name" id="uiName">PLAYER_1</span> <span class="level-badge" id="uiLevel">LV.1</span></div>
-                    <div class="exp-bar-bg"><div class="exp-fill" style="width: 45%;"></div></div>
-                    <div style="font-size: 0.9rem; margin-top: 2px;"><span class="text-orange" id="uiWLD">0.000</span> WLD</div>
+                <div class="avatar"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"></div>
+                <div style="margin-left: 10px;">
+                    <div style="font-family:'Orbitron';">PLAYER_1 <span style="background:#333; padding:2px 5px; border-radius:4px; font-size:0.8rem;">LV.1</span></div>
+                    <div style="font-size: 0.9rem;"><span style="color:var(--neon-orange)" id="uiWLD">100.00</span> WLD</div>
                 </div>
             </div>
-
-            <div class="banner-container">
-                <div class="promo-banner"><div class="marquee">🎉 EVENT: KILL BOSS GET X2 EXP! | 💎 SPECIAL OFFER: POTION 50% OFF</div></div>
-                <div class="ad-block" onclick="alert('Ads Clicked!')">
-                    <span style="background:rgba(0,0,0,0.5); padding:2px 5px; color:white;">ADVERTISEMENT</span>
-                </div>
+            
+            <div class="marquee-container"><div class="marquee-text">🎉 EVENT: KILL BOSS GET X2 EXP! | 💎 SPECIAL OFFER: POTION 50% OFF | ⚠ WARNING: BOSS IS COMING SOON</div></div>
+            
+            <div class="ad-banner">
+                <img src="https://images.unsplash.com/photo-1559056961-1f4dbbf9d36a?q=80&w=320&h=100&fit=crop">
+                <div class="ad-tag">AD</div>
             </div>
 
             <div class="lobby-content">
                 <div class="left-menu">
-                    <div class="menu-btn" style="border-color: #ffd700;" onclick="alert('Bank System: Coming Soon')">
-                        🏦<span>BANK</span>
-                    </div>
-                    <div class="menu-btn btn-blue" onclick="alert('Shop: Coming Soon')">
-                        🛒<span>SHOP</span>
-                    </div>
+                    <div class="menu-btn" style="border-color: #ffd700;" onclick="nav('bank')">🏦<span>BANK</span></div>
+                    <div class="menu-btn" style="border-color: #3498db; background:rgba(52, 152, 219, 0.4);" onclick="nav('shop')">🛒<span>SHOP</span></div>
                 </div>
-
                 <div class="right-menu">
-                    <div class="menu-btn" onclick="openModal('modal-wheel')">🎡<span>WHEEL</span></div>
-                    <div class="menu-btn" onclick="startBotMode()">🤖<span>VS BOT</span></div>
-                    <div class="menu-btn">🎒<span>BAG</span></div>
-                    
-                    <div class="menu-btn" style="border-color: var(--neon-orange);" onclick="openModal('modal-mission')">
-                        💵<span>CLAIM</span>
-                    </div>
+                    <div class="menu-btn" onclick="startPracticeMode()">🤖<span>BOT</span></div>
+                    <div class="menu-btn" style="border-color: var(--neon-orange);" onclick="nav('earn')">💵<span>EARN</span></div>
                 </div>
             </div>
 
             <div class="bottom-nav">
-                <div class="nav-item active" onclick="nav('home')"><span class="nav-icon">🏠</span>HOME</div>
-                <div class="nav-item" onclick="nav('map')"><span class="nav-icon">🗺️</span>MAP</div>
-                <div class="nav-item" onclick="nav('pvp')"><span class="nav-icon">⚔️</span>BATTLE</div>
+                <div class="nav-item active" onclick="nav('home')"><div>🏠</div>HOME</div>
+                <div class="nav-item" onclick="nav('map')"><div>🗺️</div>HUNT</div>
+                <div class="nav-item" onclick="nav('bag')"><div>🎒</div>BAG</div>
             </div>
         </div>
 
-        <div id="screen-map" class="screen">
-            <h1 style="text-align: center; font-family: 'Orbitron'; margin-bottom: 30px; color:white;">WORLD MAP</h1>
-            <div class="dungeon-card">
-                <div class="d-info"><h3>TIER 1: SEWERS</h3><p>Monsters: Slime, Rat</p><p class="text-orange">Max Reward: 0.005 WLD</p></div>
-                <button class="btn" onclick="enterDungeon(0)">ENTER<br><span style="font-size:0.8rem">0.001 WLD</span></button>
+        <div id="screen-bank" class="screen screen-white">
+            <div class="white-header-bar">
+                <h2 style="font-family:'Orbitron';">CYBER BANK</h2>
+                <div class="close-btn" onclick="nav('home')">✕</div>
             </div>
-            <div class="dungeon-card">
-                <div class="d-info"><h3>TIER 2: FACTORY</h3><p>Monsters: Robot, Drone</p><p class="text-orange">Max Reward: 0.05 WLD</p></div>
-                <button class="btn" onclick="enterDungeon(1)">ENTER<br><span style="font-size:0.8rem">0.01 WLD</span></button>
+            <div class="info-card" style="text-align:center;">
+                <p style="color:#888;">Total Balance</p>
+                <h1 style="font-family:'Orbitron'; color:var(--neon-orange); font-size:2.5rem; margin:10px 0;">100.00</h1>
+                <p>WLD TOKEN</p>
             </div>
-            <div class="dungeon-card" style="opacity: 0.5;">
-                <div class="d-info"><h3>TIER 3: CORE</h3><p>LOCKED (LV.10)</p></div>
-                <button class="btn" disabled style="background:#333; border-color:#555; color:#777;">LOCKED</button>
+            <div style="display:flex; gap:10px;">
+                <button class="btn" style="background:#2ecc71;">DEPOSIT</button>
+                <button class="btn" style="background:#e74c3c;">WITHDRAW</button>
             </div>
-            <button class="btn btn-blue" style="width: 100%; margin-top: 20px;" onclick="nav('home')">BACK TO LOBBY</button>
         </div>
 
-        <div id="screen-tower" class="screen">
-            <div class="floor-indicator" id="floorText">FLOOR 1</div>
-            <div style="margin-bottom: 20px;"><img src="https://cdn-icons-png.flaticon.com/512/3062/3062634.png" width="100" style="filter: invert(1);"></div>
-            <div class="reward-pool">POOL: <span id="poolText">0.000</span> WLD</div>
-            <button class="btn btn-red" style="width: 200px; height: 60px; font-size: 1.5rem;" onclick="fight()">⚔️ FIGHT ⚔️</button>
-            <br><br>
-            <button class="btn btn-blue" style="width: 150px;" onclick="quitDungeon()">RUN AWAY (CLAIM)</button>
-        </div>
-
-        <div id="screen-pvp" class="screen">
-            <h1 style="font-family:'Orbitron';">PVP ARENA</h1>
-            <h2 class="text-orange">COMING SOON</h2>
-            <button class="btn" onclick="nav('home')">BACK</button>
-        </div>
-
-        <div id="modal-wheel" class="modal-overlay">
-            <div class="modal-box">
-                <div class="modal-title">LUCKY WHEEL</div>
-                <div style="width:100px; height:100px; border-radius:50%; border:4px dashed var(--neon-orange); margin: 20px auto; animation: spin 2s linear infinite;"></div>
-                <p>Cooldown: 24:00:00</p>
-                <div style="display: flex; gap: 10px; justify-content: center;">
-                    <button class="btn" onclick="spinWheel(true)">FREE SPIN</button>
-                    <button class="btn btn-blue" onclick="spinWheel(false)">BUY (0.01)</button>
+        <div id="screen-shop" class="screen screen-white">
+            <div class="white-header-bar">
+                <h2 style="font-family:'Orbitron';">ITEM SHOP</h2>
+                <div class="close-btn" onclick="nav('home')">✕</div>
+            </div>
+            <div class="item-grid">
+                <div class="shop-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/867/867927.png" class="shop-img">
+                    <div style="font-weight:bold;">HP Potion</div>
+                    <div style="color:orange;">50 COINS</div>
+                    <button class="btn" style="padding:5px; margin-top:5px; font-size:0.8rem;">BUY</button>
                 </div>
-                <br><button class="btn btn-red" onclick="closeModal('modal-wheel')">CLOSE</button>
+                <div class="shop-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/867/867905.png" class="shop-img">
+                    <div style="font-weight:bold;">Mana Elixir</div>
+                    <div style="color:orange;">100 COINS</div>
+                    <button class="btn" style="padding:5px; margin-top:5px; font-size:0.8rem;">BUY</button>
+                </div>
             </div>
         </div>
 
-        <div id="modal-mission" class="modal-overlay">
-            <div class="modal-box">
-                <div class="modal-title">DAILY MISSIONS</div>
-                <div class="mission-row">
-                    <div class="mission-desc">Login Daily</div>
-                    <button class="btn btn-claim" onclick="alert('Claimed 0.001 WLD!')">GET</button>
+        <div id="screen-earn" class="screen screen-white">
+            <div class="white-header-bar">
+                <h2 style="font-family:'Orbitron';">MISSIONS</h2>
+                <div class="close-btn" onclick="nav('home')">✕</div>
+            </div>
+            <div class="mission-row">
+                <div>
+                    <div style="font-weight:bold;">Daily Login</div>
+                    <div style="font-size:0.8rem; color:#888;">Reward: 10 Coins</div>
                 </div>
-                <div class="mission-row">
-                    <div class="mission-desc">Win 1 Battle</div>
-                    <button class="btn btn-claim" disabled style="background:#333; border:none; color:#555;">0/1</button>
+                <button class="m-btn-claim" onclick="this.innerText='Claimed'; this.disabled=true;">Claim</button>
+            </div>
+            <div class="mission-row">
+                <div>
+                    <div style="font-weight:bold;">Win 3 Battles</div>
+                    <div style="font-size:0.8rem; color:#888;">Reward: 50 Coins</div>
                 </div>
-                <div class="mission-row">
-                    <div class="mission-desc">Spend 0.1 WLD</div>
-                    <button class="btn btn-claim" disabled style="background:#333; border:none; color:#555;">0/0.1</button>
-                </div>
-                <br><button class="btn btn-red" onclick="closeModal('modal-mission')">CLOSE</button>
+                <button class="m-btn-claim">0/3</button>
             </div>
         </div>
 
-        <style>@keyframes spin { 100% { transform: rotate(360deg); } }</style>
+        <div id="screen-map" class="screen screen-white">
+            <div class="white-header-bar">
+                <h2 style="margin:0; font-family:'Orbitron';">MONSTER HUNT</h2>
+                <div class="close-btn" onclick="nav('home')">✕</div>
+            </div>
+            <div id="monster-list-container" style="padding-bottom: 80px;"></div>
+        </div>
+
+        <div id="screen-bag" class="screen screen-white">
+            <div class="white-header-bar"><h2>กระเป๋า</h2><div class="close-btn" onclick="nav('home')">✕</div></div>
+            <div style="text-align:center; margin-top:50px;">🎒 Empty Bag</div>
+        </div>
+
+        <div id="screen-battle" class="screen">
+            <div class="header" style="height: 50px; background: rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; padding:0 20px; border-bottom:1px solid #333;">
+                <div style="color:white; font-family:'Orbitron'; font-size:1.2rem;">VS <span id="battleEnemyName" style="color:red;">ENEMY</span></div>
+            </div>
+
+            <div class="battle-area" id="battleArea">
+                <div class="game-column">
+                    <div class="boss-banner" id="bossBanner">
+                        <img id="bossImg" src="" alt="Boss">
+                    </div>
+                    <div class="hp-wrapper">
+                        <div class="hp-container">
+                            <div class="hp-fill hp-enemy" id="enemyHpBar"></div>
+                            <div class="hp-text" id="enemyHpText">20/20</div>
+                        </div>
+                        <div class="dmg-float" id="eDmgText">-0</div>
+                    </div>
+                    <div class="card-row" id="enemyCardRow"></div>
+                </div>
+
+                <div class="clash-zone" id="clashZone"></div>
+
+                <div class="game-column player-zone">
+                    <div class="hp-wrapper">
+                        <div class="hp-container">
+                            <div class="hp-fill hp-player" id="playerHpBar"></div>
+                            <div class="hp-text" id="playerHpText">20/20</div>
+                        </div>
+                        <div class="dmg-float" id="pDmgText">-0</div>
+                    </div>
+                    <div class="card-row" id="playerCardRow"></div>
+                    <button id="actionBtn" class="main-btn">SELECT CARDS</button>
+                </div>
+            </div>
+
+            <div id="resultModal" class="modal">
+                <h1 id="resultTitle" class="glow-text">WIN</h1>
+                <p id="resultSub" style="color:white;">REWARD: 100 COINS</p>
+                <button id="restartBtn" class="main-btn" style="width:220px; margin-top:30px;">CONTINUE</button>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        // --- DATA ---
-        let player = { name: "PLAYER_1", level: 1, exp: 0, wld: 10.000 };
-        let dungeonState = { active: false, tier: 0, floor: 1, pool: 0.0, rewards: [] };
-        const tier1Rewards = [0.001, 0.002, 0.003, 0.005]; 
+        // --- 1. GLOBAL RPG VARIABLES ---
+        let playerWLD = 100.00;
+        let playerMaxHP = 20;
+        let playerCurrentHP = 20;
 
-        // --- CORE FUNCTIONS ---
-        function updateUI() {
-            document.getElementById('uiName').innerText = player.name;
-            document.getElementById('uiLevel').innerText = "LV." + player.level;
-            document.getElementById('uiWLD').innerText = player.wld.toFixed(3);
+        // --- 2. MONSTER DATABASE ---
+        const monsterDB = [
+            { id: 1, name: "SCRAP RAT",    hp: 20,  type: "common",   loc: "Sewers",  img: "333", url:"https://images.unsplash.com/photo-1459682687441-7761439a709d?q=80&w=500&auto=format&fit=crop" },
+            { id: 2, name: "NEON SLIME",   hp: 20,  type: "common",   loc: "Sewers",  img: "333", url:"https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?q=80&w=500&auto=format&fit=crop" },
+            { id: 3, name: "GLITCH BUG",   hp: 20,  type: "common",   loc: "Digital", img: "333", url:"https://plus.unsplash.com/premium_photo-1661339265887-be1b894d01b6?q=80&w=500" },
+            { id: 4, name: "STEEL GUARD",  hp: 30,  type: "miniboss", loc: "Factory", img: "0044cc", url:"https://images.unsplash.com/photo-1514820402329-de527fdd2e6d?q=80&w=500" }, 
+            { id: 5, name: "THE OVERLORD", hp: 40,  type: "boss",    loc: "Tower",   img: "990000", url:"https://images.unsplash.com/photo-1592478411213-61535fdd28f1?q=80&w=500" } 
+        ];
+
+        // --- 3. AUDIO SYSTEM ---
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function startGameAndAudio() {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            nav('home');
         }
 
-        function switchScreen(id) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
+        function playSfx(type) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+            osc.connect(gain); gain.connect(audioCtx.destination);
+
+            if (type === 'click') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+                gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'place') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(200, now);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'hit') {
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.start(now); osc.stop(now + 0.4);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            }
         }
 
-        function login() { switchScreen('screen-lobby'); updateUI(); }
-
-        function nav(page) {
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(page === 'home') { switchScreen('screen-lobby'); document.querySelectorAll('.nav-item')[0].classList.add('active'); }
-            else if (page === 'map') { switchScreen('screen-map'); document.querySelectorAll('.nav-item')[1].classList.add('active'); }
-            else if (page === 'pvp') { switchScreen('screen-pvp'); document.querySelectorAll('.nav-item')[2].classList.add('active'); }
-        }
-
-        // --- DUNGEON ---
-        function enterDungeon(tierIndex) {
-            let cost = tierIndex === 0 ? 0.001 : 0.01;
-            if(player.wld >= cost) {
-                player.wld -= cost; updateUI();
-                dungeonState.active = true; dungeonState.tier = tierIndex; dungeonState.floor = 1; dungeonState.pool = 0.0; 
-                dungeonState.rewards = tierIndex === 0 ? tier1Rewards : tier1Rewards.map(x => x*10); 
-                startFloor(); switchScreen('screen-tower');
-            } else { alert("NOT ENOUGH WLD!"); }
-        }
-
-        function startFloor() {
-            document.getElementById('floorText').innerText = "FLOOR " + dungeonState.floor + "/4";
-            document.getElementById('poolText').innerText = dungeonState.pool.toFixed(3);
-        }
-
-        function fight() {
-            let isWin = Math.random() > 0.3; 
-            alert("ENTERING BATTLE... (เชื่อม V18 ตรงนี้)");
-            if (isWin) {
-                let rewardThisFloor = dungeonState.rewards[dungeonState.floor - 1];
-                dungeonState.pool += rewardThisFloor;
-                alert(`VICTORY! Found ${rewardThisFloor} WLD.`);
-                if (dungeonState.floor < 4) {
-                    let next = confirm(`CURRENT POOL: ${dungeonState.pool.toFixed(3)}\nGo to FLOOR ${dungeonState.floor+1}?`);
-                    if(next) { dungeonState.floor++; startFloor(); } else { claimAndExit(1); }
-                } else { alert("TOWER CLEARED!"); claimAndExit(1); }
-            } else { alert("YOU DIED! Rewards halved."); claimAndExit(0.5); }
-        }
-
-        function quitDungeon() { if(confirm("Retreat now?")) claimAndExit(1); }
-
-        function claimAndExit(multiplier) {
-            let finalReward = dungeonState.pool * multiplier;
-            player.wld += finalReward;
-            alert(`DUNGEON ENDED.\nTotal Reward: ${finalReward.toFixed(3)} WLD`);
-            dungeonState.active = false; updateUI(); nav('map');
-        }
-
-        function startBotMode() { alert("VS BOT Mode"); }
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+        // --- 4. RPG UI LOGIC ---
+        function updateBalance() { document.getElementById('uiWLD').innerText = playerWLD.toFixed(2); }
         
-        function spinWheel(isFree) {
-            if(!isFree && player.wld < 0.01) { alert("Not enough WLD!"); return; }
-            if(!isFree) { player.wld -= 0.01; updateUI(); }
-            alert("Spinning... Got Item!"); closeModal('modal-wheel');
+        function nav(target) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            let screenId = 'screen-' + target;
+            if(target === 'home') screenId = 'screen-lobby';
+            const targetScreen = document.getElementById(screenId);
+            if(targetScreen) targetScreen.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            if(target === 'home') document.querySelectorAll('.nav-item')[0].classList.add('active');
+            if(target === 'map') document.querySelectorAll('.nav-item')[1].classList.add('active');
+            if(target === 'bag') document.querySelectorAll('.nav-item')[2].classList.add('active');
+            updateBalance();
         }
+
+        // Render Map List
+        function initMap() {
+            const container = document.getElementById('monster-list-container');
+            container.innerHTML = '';
+            monsterDB.forEach(m => {
+                let cardClass = 'rank-common';
+                let badgeStyle = '';
+                let infoExtra = '';
+                if(m.type === 'miniboss') { cardClass = 'rank-miniboss'; badgeStyle = 'color:#00eaff; border-color:#00eaff;'; infoExtra = '<p style="color:#00eaff; font-size:0.7rem; font-weight:bold;">★ MINI BOSS</p>'; }
+                else if (m.type === 'boss') { cardClass = 'rank-boss'; badgeStyle = 'background:#ffd700; color:black; font-weight:bold; border:none;'; infoExtra = '<p style="color:#ffd700; font-weight:bold; font-size:0.7rem;">☠️ WORLD BOSS</p>'; }
+
+                const cardHTML = `
+                    <div class="monster-card ${cardClass}" onclick="prepareBattle(${m.id})">
+                        <div style="display:flex; align-items:center;">
+                            <img src="${m.url}" class="m-avatar">
+                            <div class="m-info"><h3>${m.name}</h3>${infoExtra}<p>${m.loc} • HP: ${m.hp}</p></div>
+                        </div>
+                        <div class="hp-badge" style="${badgeStyle}">HP: ${m.hp}</div>
+                    </div>`;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        // --- 5. BATTLE SYSTEM ---
+        let battle_eMaxHP = 20;
+        let battle_eHP = 20;
+        let battle_pDeck = [], battle_eDeck = [];
+        let battle_placedCards = [null, null, null, null, null];
+        let battle_turn = 0;
+        let battle_isPlaying = false;
+        let currentReward = 0;
+        let isPracticeMode = false;
+
+        // 🤖 PRACTICE MODE
+        function startPracticeMode() {
+            isPracticeMode = true;
+            battle_eMaxHP = 20;
+            battle_eHP = 20;
+            document.getElementById('battleEnemyName').innerText = "TRAINING BOT";
+            document.getElementById('bossImg').src = "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400"; 
+            currentReward = 0;
+            
+            // BG = Lobby
+            document.getElementById('screen-battle').style.backgroundImage = "url('https://github.com/user-attachments/assets/2919ee1f-6eb5-4139-ae6c-72aeaa83c89f')";
+            
+            nav('battle');
+            initBattleState();
+        }
+
+        // ⚔️ NORMAL BATTLE
+        function prepareBattle(monsterID) {
+            isPracticeMode = false;
+            const monster = monsterDB.find(m => m.id === monsterID);
+            if(!monster) return;
+
+            battle_eMaxHP = monster.hp;
+            battle_eHP = monster.hp;
+            document.getElementById('battleEnemyName').innerText = monster.name;
+            document.getElementById('bossImg').src = monster.url;
+            currentReward = Math.floor(monster.hp * 0.5);
+
+            // BG = Red Gradient
+            document.getElementById('screen-battle').style.backgroundImage = "radial-gradient(circle at 50% 10%, rgba(255, 157, 0, 0.1) 0%, transparent 70%)";
+
+            nav('battle');
+            initBattleState();
+        }
+
+        function initBattleState() {
+            battle_turn = 0;
+            battle_placedCards = [null, null, null, null, null];
+            battle_isPlaying = false;
+            document.getElementById('resultModal').style.display = 'none';
+            updateBattleUI();
+
+            const cZone = document.getElementById('clashZone'); cZone.innerHTML = '';
+            for(let i=0; i<5; i++) {
+                const slot = document.createElement('div');
+                slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
+                slot.dataset.id = i;
+                cZone.appendChild(slot);
+            }
+
+            const eRow = document.getElementById('enemyCardRow'); eRow.innerHTML = '';
+            for(let i=0; i<5; i++) {
+                const wrap = document.createElement('div'); wrap.className = 'card-perspective'; wrap.id = `eWrap${i}`;
+                wrap.innerHTML = `<div class="card-inner"><div class="card-front"></div><div class="card-back enemy-revealed" id="eCard${i}">?</div></div>`;
+                eRow.appendChild(wrap);
+            }
+
+            battle_pDeck = [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
+            battle_eDeck = [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5); 
+            
+            const pRow = document.getElementById('playerCardRow'); pRow.innerHTML = '';
+            battle_pDeck.forEach((val) => {
+                const card = document.createElement('div');
+                card.className = 'my-card';
+                card.textContent = val;
+                card.onclick = () => selectCardAction(val, card);
+                pRow.appendChild(card);
+            });
+
+            const btn = document.getElementById('actionBtn');
+            btn.textContent = "SELECT CARDS"; btn.disabled = true; btn.className = 'main-btn';
+            btn.onclick = null;
+            playSfx('place');
+        }
+
+        function selectCardAction(val, el) {
+            if(battle_isPlaying || battle_turn >= 5 || el.classList.contains('used')) return;
+
+            battle_placedCards[battle_turn] = val;
+            playSfx('click');
+            
+            const slot = document.querySelector(`.clash-slot[data-id="${battle_turn}"]`);
+            slot.innerHTML = `<div>${val}</div>`;
+            slot.classList.remove('active');
+            
+            el.classList.add('used');
+            
+            battle_turn++;
+            if(battle_turn < 5) {
+                document.querySelector(`.clash-slot[data-id="${battle_turn}"]`).classList.add('active');
+            } else {
+                const btn = document.getElementById('actionBtn');
+                btn.textContent = "ATTACK !!!"; btn.disabled = false;
+                btn.classList.add('attack'); 
+                btn.onclick = runBattleSequence;
+            }
+        }
+
+        async function runBattleSequence() {
+            battle_isPlaying = true;
+            document.getElementById('actionBtn').disabled = true;
+
+            let pSurvivors = [];
+            let eSurvivors = [];
+
+            for(let i=0; i<5; i++) {
+                const eVal = battle_eDeck[i]; const pVal = battle_placedCards[i];
+                
+                const eWrap = document.getElementById(`eWrap${i}`);
+                const eBack = document.getElementById(`eCard${i}`);
+                eBack.textContent = eVal;
+                eWrap.classList.add('flipped');
+                playSfx('place');
+                
+                await new Promise(r => setTimeout(r, 600));
+
+                const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
+                const pCard = pSlot.querySelector('div');
+
+                if (pVal > eVal) {
+                    eBack.classList.add('dead-content');
+                    pCard.parentElement.classList.add('win-pulse');
+                    pSurvivors.push({val: pVal});
+                } else if (eVal > pVal) {
+                    pCard.classList.add('dead-content');
+                    eBack.classList.add('win-pulse');
+                    eSurvivors.push({val: eVal});
+                } else {
+                    eBack.classList.add('dead-content');
+                    pCard.classList.add('dead-content');
+                }
+                playSfx('click'); 
+                await new Promise(r => setTimeout(r, 400));
+            }
+
+            await new Promise(r => setTimeout(r, 500));
+            const pCount = pSurvivors.length;
+            const eCount = eSurvivors.length;
+
+            let dmgToEnemy = 0;
+            let dmgToPlayer = 0;
+
+            if (pCount > eCount) {
+                dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
+            } else if (eCount > pCount) {
+                dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
+            } else {
+                dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
+                dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
+            }
+
+            // Apply Damage
+            battle_eHP -= dmgToEnemy;
+            if(dmgToEnemy > 0) flashDamage('e', dmgToEnemy);
+
+            playerCurrentHP -= dmgToPlayer;
+            if(dmgToPlayer > 0) flashDamage('p', dmgToPlayer); 
+            
+            if(playerCurrentHP < 0) playerCurrentHP = 0;
+
+            updateBattleUI();
+            await new Promise(r => setTimeout(r, 1500));
+            checkBattleResult();
+        }
+
+        function flashDamage(who, amount) {
+            if(amount <= 0) return;
+            const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
+            txt.textContent = "-" + amount;
+            txt.classList.add('show');
+            playSfx('hit');
+            document.getElementById('battleArea').classList.add('shaking');
+            if(who === 'e') document.querySelector('.boss-banner').classList.add('hit');
+            
+            setTimeout(() => {
+                txt.classList.remove('show');
+                document.getElementById('battleArea').classList.remove('shaking');
+                document.querySelector('.boss-banner').classList.remove('hit');
+            }, 800);
+        }
+
+        function updateBattleUI() {
+            if(battle_eHP < 0) battle_eHP = 0;
+            document.getElementById('enemyHpBar').style.width = (battle_eHP/battle_eMaxHP)*100 + "%";
+            document.getElementById('enemyHpText').textContent = battle_eHP + "/" + battle_eMaxHP;
+            document.getElementById('playerHpBar').style.width = (playerCurrentHP/playerMaxHP)*100 + "%";
+            document.getElementById('playerHpText').textContent = playerCurrentHP + "/" + playerMaxHP;
+        }
+
+        function checkBattleResult() {
+            const modal = document.getElementById('resultModal');
+            const title = document.getElementById('resultTitle');
+            const sub = document.getElementById('resultSub');
+            const btn = document.getElementById('restartBtn');
+
+            // ⚔️ BATTLE END
+            if (battle_eHP <= 0 && playerCurrentHP <= 0) {
+                // SUDDEN DEATH
+                title.textContent = "DOUBLE KO"; title.style.color = "yellow";
+                sub.textContent = "SUDDEN DEATH MODE!";
+                btn.textContent = "FIGHT FOR LIFE (10 HP)";
+                btn.className = "main-btn sudden";
+                btn.onclick = () => {
+                    battle_eHP = 10; battle_eMaxHP = 10;
+                    playerCurrentHP = 10; playerMaxHP = 10;
+                    initBattleState();
+                };
+                modal.style.display = 'flex';
+                playSfx('win');
+
+            } else if (battle_eHP <= 0) {
+                // WIN
+                playerWLD += 10;
+                title.textContent = "VICTORY"; title.style.color = "#ff9d00";
+                
+                if(isPracticeMode) sub.textContent = "PRACTICE WIN (No Reward)";
+                else sub.textContent = `REWARD: +10 WLD | +${currentReward} COINS`;
+                
+                btn.textContent = "RETURN"; btn.className = "main-btn";
+                btn.onclick = () => nav(isPracticeMode ? 'home' : 'map');
+                modal.style.display = 'flex';
+                playSfx('win');
+
+            } else if (playerCurrentHP <= 0) {
+                // LOSE
+                title.textContent = "DEFEATED"; title.style.color = "red";
+                sub.textContent = "YOU FAINTED...";
+                btn.textContent = "REVIVE AT TOWN"; btn.className = "main-btn";
+                btn.onclick = () => { playerCurrentHP = 20; playerMaxHP = 20; nav('home'); }; 
+                modal.style.display = 'flex';
+
+            } else {
+                // NEXT ROUND
+                const btnAction = document.getElementById('actionBtn');
+                btnAction.textContent = "NEXT ROUND"; btnAction.disabled = false; btnAction.classList.remove('attack');
+                btnAction.onclick = initBattleState;
+            }
+        }
+
+        // Start
+        initMap();
+
     </script>
 </body>
 </html>
