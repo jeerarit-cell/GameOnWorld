@@ -202,7 +202,7 @@
             <div class="marquee-container"><div class="marquee-text">🎉 EVENT: KILL BOSS GET X2 EXP! | 💎 SPECIAL OFFER: POTION 50% OFF | ⚠ WARNING: BOSS IS COMING SOON</div></div>
             
             <div class="ad-banner">
-                <img src="https://images.unsplash.com/photo-1559056961-1f4dbbf9d36a?q=80&w=320&h=100&fit=crop">
+                <img src="https://github.com/user-attachments/assets/95431a34-e841-4114-967c-797641a63055">
                 <div class="ad-tag">AD</div>
             </div>
 
@@ -212,7 +212,7 @@
                     <div class="menu-btn" style="border-color: #3498db; background:rgba(52, 152, 219, 0.4);" onclick="nav('shop')">🛒<span>SHOP</span></div>
                 </div>
                 <div class="right-menu">
-                    <div class="menu-btn" onclick="startPracticeMode()">🤖<span>BOT</span></div>
+                    <div class="menu-btn" onclick="startPracticeMode()">🤖<span>Training</span></div>
                     <div class="menu-btn" style="border-color: var(--neon-orange);" onclick="nav('earn')">💵<span>EARN</span></div>
                 </div>
             </div>
@@ -655,7 +655,7 @@
                 title.textContent = "VICTORY"; title.style.color = "#ff9d00";
                 
                 if(isPracticeMode) sub.textContent = "PRACTICE WIN (No Reward)";
-                else sub.textContent = `REWARD: +10 WLD | +${currentReward} COINS`;
+                else sub.textContent = `+${currentReward} COINS`;
                 
                 btn.textContent = "RETURN"; btn.className = "main-btn";
                 btn.onclick = () => nav(isPracticeMode ? 'home' : 'map');
@@ -665,7 +665,7 @@
             } else if (playerCurrentHP <= 0) {
                 // LOSE
                 title.textContent = "DEFEATED"; title.style.color = "red";
-                sub.textContent = "YOU FAINTED...";
+                sub.textContent = "YOU LOSE...";
                 btn.textContent = "REVIVE AT TOWN"; btn.className = "main-btn";
                 btn.onclick = () => { playerCurrentHP = 20; playerMaxHP = 20; nav('home'); }; 
                 modal.style.display = 'flex';
