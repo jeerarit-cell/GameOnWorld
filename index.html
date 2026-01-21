@@ -660,7 +660,7 @@
                 else sub.textContent = `+${currentReward} COINS`;
                 
                 btn.textContent = "RETURN"; btn.className = "main-btn";
-                btn.onclick = () => nav(isPracticeMode ? 'home' : 'map');
+                btn.onclick = () =playerMaxHP; nav(isPracticeMode ? 'home' : 'map');
                 modal.style.display = 'flex';
                 playSfx('win');
 
@@ -668,8 +668,8 @@
                 // LOSE
                 title.textContent = "DEFEATED"; title.style.color = "red";
                 sub.textContent = "YOU LOSE...";
-                btn.textContent = "REVIVE AT TOWN"; btn.className = "main-btn";
-                btn.onclick = () => { playerCurrentHP = 20; playerMaxHP = 20; nav('home'); }; 
+                btn.textContent = "RETURN"; btn.className = "main-btn";
+                btn.onclick = () =playerMaxHP; nav(isPracticeMode ? 'home' : 'map'); 
                 modal.style.display = 'flex';
 
             } else {
