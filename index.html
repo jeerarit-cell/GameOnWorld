@@ -482,7 +482,8 @@
             battle_isPlaying = false;
             document.getElementById('resultModal').style.display = 'none';
             updateBattleUI();
-
+            
+            const currentImg = document.getElementById('bossImg').src;
             const cZone = document.getElementById('clashZone'); cZone.innerHTML = '';
             for(let i=0; i<5; i++) {
                 const slot = document.createElement('div');
@@ -494,7 +495,7 @@
             const eRow = document.getElementById('enemyCardRow'); eRow.innerHTML = '';
             for(let i=0; i<5; i++) {
                 const wrap = document.createElement('div'); wrap.className = 'card-perspective'; wrap.id = `eWrap${i}`;
-                wrap.innerHTML = `<div class="card-inner"><div class="card-front"></div><div class="card-back enemy-revealed" id="eCard${i}">?</div></div>`;
+                wrap.innerHTML = `<div class="card-inner"><div class="card-front"style="background-image:url('${currentImg}');background-size:cover; background-position:center;"></div><div class="card-back enemy-revealed" id="eCard${i}">?</div></div>`;
                 eRow.appendChild(wrap);
             }
 
