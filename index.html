@@ -42,7 +42,7 @@
         .screen-white { background-color: var(--bg-white) !important; color: #333; padding: 20px; overflow-y: auto; background-image: none !important; }
 
         /* --- BACKGROUNDS --- */
-        #screen-login { background-image: url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070'); }
+        #screen-login { background-image: url('https://github.com/user-attachments/assets/c9b596d6-88ee-4ca0-bf0a-a80b17ab31f0'); }
         #screen-lobby { background-image: url('https://github.com/user-attachments/assets/70b3047d-bbea-42b8-a8bd-96fe08c69f03'); }
 
         /* --- GLOBAL UI --- */
@@ -52,7 +52,7 @@
         
         /* AD BANNER */
         .ad-banner {
-            width: 100%; max-width: 320px; height: 100px;
+            width: 100%; max-width: 400px; height: 120px;
             background: #222; margin: 10px auto;
             border-radius: 8px; border: 1px solid #444;
             display: flex; align-items: center; justify-content: center;
@@ -82,18 +82,18 @@
             width: 75px; height: 75px; /* Bigger Size */
             border-radius: 18px; 
             border: 2px solid white; 
-            background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); 
+            background: rgba(0,0,0,0); backdrop-filter: blur(5px); 
             display: flex; align-items: center; justify-content: center; 
             font-size: 2.2rem; /* Bigger Icon */
             position: relative; cursor: pointer; 
-            margin-bottom: 25px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5); 
+            margin-bottom: 40px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0); 
         }
         .menu-btn span { font-size: 11px; position: absolute; bottom: 4px; width: 100%; text-align: center; font-family: 'Kanit'; font-weight: bold; color: white; text-shadow: 1px 1px 1px black; }
         
         /* 🔧 PUSH DOWN UPDATE */
-        .left-menu { position: absolute; left: 20px; top: 40px; } /* Pushed Down */
-        .right-menu { position: absolute; right: 20px; top: 40px; } /* Pushed Down */
+        .left-menu { position: absolute; left: 20px; top: 350px; } /* Pushed Down */
+        .right-menu { position: absolute; right: 20px; top: 350px; } /* Pushed Down */
 
         /* 🔧 FLOATING NAV UPDATE */
         .bottom-nav { 
@@ -201,19 +201,19 @@
             
             <div class="marquee-container"><div class="marquee-text">🎉 EVENT: KILL BOSS GET X2 EXP! | 💎 SPECIAL OFFER: POTION 50% OFF | ⚠ WARNING: BOSS IS COMING SOON</div></div>
             
-            <div class="ad-banner">
+            <div class="ad-banner"onclick="window.open('https://www.youtube.com/watch?v=7YtWwxA9sC4')" style=cursor: pointer;">
                 <img src="https://github.com/user-attachments/assets/95431a34-e841-4114-967c-797641a63055">
                 <div class="ad-tag">AD</div>
             </div>
 
             <div class="lobby-content">
                 <div class="left-menu">
-                    <div class="menu-btn" style="border-color: #ffd700;" onclick="nav('bank')">🏦<span>BANK</span></div>
-                    <div class="menu-btn" style="border-color: #3498db; background:rgba(52, 152, 219, 0.4);" onclick="nav('shop')">🛒<span>SHOP</span></div>
+                    <div class="menu-btn" onclick="nav('bank')">🏦<span>BANK</span></div>
+                    <div class="menu-btn" onclick="nav('shop')">🛒<span>SHOP</span></div>
                 </div>
                 <div class="right-menu">
                     <div class="menu-btn" onclick="startPracticeMode()">🤖<span>Training</span></div>
-                    <div class="menu-btn" style="border-color: var(--neon-orange);" onclick="nav('earn')">💵<span>EARN</span></div>
+                    <div class="menu-btn" onclick="nav('earn')">💵<span>EARN</span></div>
                 </div>
             </div>
 
@@ -447,7 +447,7 @@
             battle_eMaxHP = 20;
             battle_eHP = 20;
             document.getElementById('battleEnemyName').innerText = "TRAINING BOT";
-            document.getElementById('bossImg').src = "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=400"; 
+            document.getElementById('bossImg').src = "https://github.com/user-attachments/assets/25e5e09e-332d-4a76-8bcb-6f21013d6bcc"; 
             currentReward = 0;
             
             // BG = Lobby
@@ -470,7 +470,7 @@
             currentReward = Math.floor(monster.hp * 0.5);
 
             // BG = Red Gradient
-            document.getElementById('screen-battle').style.backgroundImage = "radial-gradient(circle at 50% 10%, rgba(255, 157, 0, 0.1) 0%, transparent 70%)";
+            document.getElementById('screen-battle').style.backgroundImage = "url('https://github.com/user-attachments/assets/13b147e2-f363-49ce-bd43-68530d231a60')";
 
             nav('battle');
             initBattleState();
