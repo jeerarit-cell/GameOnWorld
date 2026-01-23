@@ -129,7 +129,13 @@
         .monster-card:active { transform: scale(0.98); }
         .rank-common { background: linear-gradient(135deg, #2c3e50, #4ca1af); }
         .rank-miniboss { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid var(--neon-blue); }
-        .rank-boss { background: linear-gradient(135deg, #8E0E00, #1F1C18); border: 2px solid #ffd700; }
+        .rank-boss { background: linear-gradient(135deg, #8E0E00, #1F1C18); border: 2px solid #ffd700; 
+        .rank-legendary { background: linear-gradient(135deg, #FFD700, #FF8C00);  border: 2px solid white;  box-shadow: 0 0 15px rgba(255, 215, 0, 0.8);  animation: goldPulse 2s infinite; }
+        @keyframes goldPulse {
+        0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+        50% { box-shadow: 0 0 30px rgba(255, 215, 0, 1); border-color: #fff; }
+        100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.5); }
+}
         .m-avatar { width: 50px; height: 50px; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.3); object-fit: cover; margin-right: 15px; }
         .m-info h3 { margin: 0; font-family: 'Orbitron'; font-size: 1rem; }
         .hp-badge { background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-family: 'Orbitron'; border: 1px solid rgba(255,255,255,0.2); min-width: 60px; text-align: center; }
@@ -354,6 +360,7 @@
             { id: 5, name: "Wolf Fighter",   hp: 20,  type: "common",   loc: "Digital", img: "333", url:"https://github.com/user-attachments/assets/8e3523b7-7ed7-4d27-b6cf-2f10373738e9" },
             { id: 6, name: "Fire Gobin",  hp: 30,  type: "miniboss", loc: "Factory", img: "0044cc", url:"https://github.com/user-attachments/assets/8a354949-f700-4d7e-9ff4-dd5b90164296" }, 
             { id: 7, name: "THE OVERLORD", hp: 40,  type: "boss",    loc: "Tower",   img: "990000", url:"https://github.com/user-attachments/assets/6dec1453-a3f9-4b8f-8499-ac45bd42da29" } 
+            { id: 8, name: "GOLDEN DRAGON", hp: 50,  type: "legendary",   loc: "Sky Realm",   img: "gold", url:"https://github.com/user-attachments/assets/691aef63-3fa4-4e64-9ad0-3034beb89e1c" }
         ];
 
         // --- 3. AUDIO SYSTEM ---
@@ -418,6 +425,7 @@
                 let infoExtra = '';
                 if(m.type === 'miniboss') { cardClass = 'rank-miniboss'; badgeStyle = 'color:#00eaff; border-color:#00eaff;'; infoExtra = '<p style="color:#00eaff; font-size:0.7rem; font-weight:bold;">★ MINI BOSS</p>'; }
                 else if (m.type === 'boss') { cardClass = 'rank-boss'; badgeStyle = 'background:#ffd700; color:black; font-weight:bold; border:none;'; infoExtra = '<p style="color:#ffd700; font-weight:bold; font-size:0.7rem;">☠️ WORLD BOSS</p>'; }
+                else if (m.type === 'legendary') { cardClass = 'rank-legendary'; badgeStyle = 'background:white; color:#FF8C00; font-weight:900; border:none; box-shadow: 0 0 10px white;'; infoExtra = '<p style="color:white; font-weight:900; font-size:0.8rem; text-shadow: 0 1px 2px black;">👑 LEGENDARY BOSS</p>'; }
 
                 const cardHTML = `
                     <div class="monster-card ${cardClass}" onclick="prepareBattle(${m.id})">
