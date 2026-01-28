@@ -64,7 +64,7 @@
 
         /* 🎥 VIDEO BOX (ข้อ 1) */
         .video-box {
-            width: 100%; max-width: 380px; height: 120px;
+            width: 100%; max-width: 380px; height: 100px;
             margin: 0 auto 20px auto;
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 15px rgba(0, 234, 255, 0.4);
@@ -96,30 +96,43 @@
         /* (ข้อ 3) ทำให้ปุ่ม Map ลอย */
         .bottom-nav { 
             height: 80px;
-            background: #fff;
+           /* เปลี่ยนพื้นหลังเป็นสีดำโปร่งแสง */
+            background:  var( --neon-orange);
+            backdrop-filter: blur(10px); /* ใส่เบลอข้างหลังให้ดูไฮเทค */
+    
+            /* ใส่ขอบเรืองแสงสีส้ม (เข้ากับปุ่ม Hunt) */
+               border: 3px solid  var(--neon-blue);
+            box-shadow: 0 0 20px rgba(255, 157, 0, 0.2); /* แสงฟุ้งๆ */
+    
             margin: 0 15px 25px 15px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+           border-radius: 30px;
             display: flex; justify-content: center; 
-            align-items: center; 
-            z-index: 100; 
-            flex-shrink: 0; /* ล็อกไว้ห้ามหด */
-            position: relative; /* เพื่อให้ z-index ทำงานสมบูรณ์ */
-        }
+           align-items: center;
+           position: relative;
+           z-index: 100; flex-shrink: 0;  animation: pulse 2s infinite; 
+}
         .nav-item { 
-            text-align: center; 
-            color: #999;
-            font-size: 0.9rem;
-            font-family: 'Orbitron'; cursor: pointer; 
-            transition: 0.2s;
-            width: 100px; 
-        }
-        .nav-item div { font-size: 1.8rem; margin-bottom: 2px; }
+           text-align: center; 
+    color: var(--neon-blue);
+    
+    /* 🔧 ปรับตรงนี้ครับ */
+    font-size: 2rem;      /* ใหญ่ขึ้น (ของเดิม 0.9) */
+    font-weight: 900;       /* ตัวหนาสุด */
+    letter-spacing: 4px;    /* เว้นระยะห่างตัวอักษรให้ดูแพง */
+    text-transform: uppercase; /* บังคับตัวพิมพ์ใหญ่หมด */
+   
+    font-family: 'Orbitron'; cursor: pointer; 
+    transition: 0.3s;
+    width: 100%; /* ให้กินพื้นที่เต็มปุ่ม */
+    text-shadow: 0 0 5px rgba(0,0,0,0.5); animation: pulse 2s infinite;
+}
+       
         .nav-item.active { 
-            color: var(--neon-orange);
-            transform: translateY(-2px);
-            font-weight: bold;
-        }
+           color: var(--neon-orange); /* สีส้มตอนเลือก */
+    transform: translateY(-2px) scale(1.1); /* ขยายขึ้นนิดนึง */
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--neon-orange); /* ใส่เงาแสงให้ตัวหนังสือ */
+}
 
         .marquee-container { background: rgba(0,0,0,0.6); border: 1px solid var(--neon-blue); border-radius: 4px; height: 30px; display: flex; align-items: center; overflow: hidden; white-space: nowrap; position: relative; margin: 10px 10px 0 10px; flex-shrink: 0; }
         .marquee-text { display: inline-block; padding-left: 100%; animation: scroll-left 15s linear infinite; color: var(--neon-blue); font-size: 0.8rem; font-family: 'Kanit'; }
@@ -192,7 +205,7 @@
         
         <div id="screen-login" class="screen active" style="justify-content: center; align-items: center;">
             <div style="font-family: 'Orbitron'; font-size: 3rem; text-align: center; color:white; text-shadow: 0 0 20px var(--neon-orange); margin-bottom: 20px;">
-                PROJECT<br><span style="color:var(--neon-orange)">NEXUS</span>
+                PROJECT<br><span style="color:var(--neon-orange)">CHASER</span>
             </div>
             <button class="btn" style="width: 200px;" onclick="startGameAndAudio()">JOIN GAME</button>
         </div>
@@ -206,7 +219,7 @@
                 </div>
             </div>
             
-            <div class="marquee-container"><div class="marquee-text">🎉 EVENT: KILL BOSS GET X2 EXP! | ⚠ WARNING: BOSS IS COMING SOON</div></div>
+            <div class="marquee-container"><div class="marquee-text">🎉 EVENT: ทอสอบ😊😊😊</div></div>
             
             <div class="ad-banner" onclick="window.open('https://www.youtube.com/watch?v=7YtWwxA9sC4')" style="cursor: pointer;">
                 <img src="https://github.com/user-attachments/assets/95431a34-e841-4114-967c-797641a63055">
@@ -214,23 +227,22 @@
             </div>
 
             <div class="lobby-content">
-                <div class="video-box" style="height: 120px;">
-    <div class="video-label">LIVE FEED</div>
-    <iframe 
-        width="100%" 
-        height="100%" 
-        src="https://www.youtube.com/embed/2ohNHqSTu0w?autoplay=0&mute=0&loop=1&playlist=2ohNHqSTu0w&controls=1&playsinline=1&rel=0" 
-        title="YouTube video player" 
-        frameborder="0" 
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-        allowfullscreen>
-    </iframe>
-</div>
-
+                <div class="video-box">
+                    <div class="video-label">LIVE FEED</div>
+                    <iframe 
+                        width="100%" 
+                        height="100%" 
+                        src="https://www.youtube.com/embed/2ohNHqSTu0w?autoplay=0&loop=1&playlist=2ohNHqSTu0w&mute=0&controls=1&showinfo=0&modestbranding=1" 
+                        title="YouTube video player" 
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
             </div>
 
             <div class="bottom-nav">
-                <div class="nav-item active" onclick="nav('map')"><div>🗺️</div>HUNT</div>
+                <div class="nav-item active" onclick="nav('map')">START GAME </div>
             </div>
         </div>
 
