@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CYBER RPG v2.8 (Reborn)</title>
+    <title>CYBER RPG v3.0 (Reborn)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=Orbitron:wght@700;900&display=swap');
 
@@ -64,7 +64,7 @@
 
         /* 🎥 VIDEO BOX (ข้อ 1) */
         .video-box {
-            width: 100%; max-width: 380px; height: 110px;
+            width: 100%; max-width: 380px; height: 100px;
             margin: 0 auto 20px auto;
             border: 2px solid var(--neon-blue);
             box-shadow: 0 0 15px rgba(0, 234, 255, 0.4);
@@ -90,8 +90,7 @@
             overflow-y: auto; /* อนุญาตให้เลื่อนขึ้นลง */
             width: 100%;
             display: flex; flex-direction: column; align-items: center; 
-            padding-bottom: 20px;
-            gap: 20px; 
+            padding-bottom: 20px; 
         }
         
         /* (ข้อ 3) ทำให้ปุ่ม Map ลอย */
@@ -180,11 +179,11 @@
         .card-back { background: linear-gradient(135deg, #eee, #ccc); color: #000; transform: rotateY(180deg); font-weight: 900; }
         .card-perspective.flipped .card-back.enemy-revealed { background: linear-gradient(135deg, var(--neon-red), #990000); color: white; border: 1px solid white; box-shadow: 0 0 10px var(--neon-red); }
         .clash-zone { width: var(--total-width); height: 90px; display: flex; gap: var(--gap); justify-content: center; align-items: center; border-top: 1px solid rgba(255,255,255,0.2); border-bottom: 1px solid rgba(255,255,255,0.2); }
-        .clash-slot { width: var(--card-width); height: var(--card-height); border: 1px dashed rgba(255,255,255,0.4); border-radius: 6px; display: flex; align-items: center; justify-content: center; background: transparent; position: relative; flex-shrink: 0; }
+        .clash-slot { width: var(--card-width); height: var(--card-height); border: 1px solid rgba(255,255,255,0.4); border-radius: 6px; display: flex; align-items: center; justify-content: center; background: transparent; position: relative; flex-shrink: 0; }
         .clash-slot.active { border: 2px solid #fff; background: rgba(0, 234, 255, 0.15); box-shadow: 0 0 15px rgba(0, 234, 255, 0.3); }
-        .clash-slot div { width: 100%; height: 100%; background: linear-gradient(135deg, var(--neon-orange), #b36b00); color: #000; border-radius: 4px; border: 1px solid white; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 1.6rem; font-weight: 900; }
+        .clash-slot div { width: 100%; height: 100%; background:var(--neon-blue); color: #000; border-radius: 4px; border: 1px solid white; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 1.6rem; font-weight: 900; }
         .my-card { width: var(--card-width); height: var(--card-height); flex-shrink: 0; border: 1px solid white; color: var(--neon-orange); background: #111; cursor: pointer; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron'; font-size: 1.6rem; }
-        .my-card.selected { transform: translateY(-12px); background: var(--neon-blue); color: #fff; border-color: var(--neon-blue); box-shadow: 0 0 15px varvar(--neon-blue); }
+        .my-card.selected { transform: translateY(-12px); background: var(--neon-orange); color: #000; border-color: white; box-shadow: 0 0 15px var(--neon-orange); }
         .my-card.used { opacity: 0; pointer-events: none; }
         .main-btn { width: 100%; height: 50px; margin-top: 4px; background: linear-gradient(180deg, var(--neon-blue), #0066cc); border: 1px solid white; border-radius: 6px; font-family: 'Orbitron'; font-size: 1.2rem; color: #fff; font-weight: 900; letter-spacing: 2px; cursor: pointer; box-shadow: 0 4px 0 #004488; transition: 0.1s; text-transform: uppercase; }
         .main-btn:active { transform: translateY(4px); box-shadow: none; }
@@ -572,8 +571,8 @@
             document.getElementById('playerHpBar').style.width = (playerCurrentHP/playerMaxHP)*100 + "%";
             document.getElementById('playerHpText').textContent = playerCurrentHP + "/" + playerMaxHP;
         }
-
-        // (ข้อ 4) จบเกมแล้วไปหน้า Map
+      
+        // (ข้อ 4) จบเกมแล้วคำนวณเงินรางวัลและไปหน้า Map
         function checkBattleResult() {
             const modal = document.getElementById('resultModal');
             const title = document.getElementById('resultTitle');
@@ -582,57 +581,88 @@
 
             // ⚔️ BATTLE END
             if (battle_eHP <= 0 && playerCurrentHP <= 0) {
-                // SUDDEN DEATH
-                title.textContent = "DOUBLE KO"; title.style.color = "yellow";
-                sub.textContent = "SUDDEN DEATH MODE!";
+                // --- SUDDEN DEATH (เสมอ) ---
+                title.textContent = "DOUBLE KO"; 
+                title.style.color = "yellow";
+                sub.innerHTML = "NO REWARD YET<br>ENTER SUDDEN DEATH MODE!";
+                
                 btn.textContent = "FIGHT FOR LIFE (10 HP)";
                 btn.className = "main-btn sudden";
+                
+                // ตั้งค่า Sudden Death (10 HP)
                 btn.onclick = () => {
                     battle_eHP = 10; battle_eMaxHP = 10;
                     playerCurrentHP = 10; playerMaxHP = 10;
+                    updateBattleUI(); // อัปเดตหลอดเลือดทันที
                     initBattleState();
                 };
                 modal.style.display = 'flex';
-                playSfx('win');
+                playSfx('win'); // ใช้เสียง Win เพื่อกระตุ้น
 
             } else if (battle_eHP <= 0) {
-                // WIN
-                playerWLD += 10;
-                title.textContent = "VICTORY"; title.style.color = "#ff9d00";
+                // --- WIN (ชนะ) ---
+                // สูตร: เลือดมอนเต็ม - (เลือดเราเต็ม - เลือดเราที่เหลือ)
+                // เช่น มอน 20 - (เรา 20 - เหลือ 1) = 20 - 19 = รางวัล 1 Coin
+                const damageTaken = playerMaxHP - playerCurrentHP;
+                let reward = battle_eMaxHP - damageTaken;
+
+                // ป้องกันรางวัลติดลบ (ชนะต้องได้อย่างน้อย 0 หรือจะให้ติดลบก็ได้ถ้าโหด)
+                if (reward < 0) reward = 0; 
+
+                playerWLD += reward; // เพิ่มเงิน
+                updateBalance();     // อัปเดตตัวเลขเงินที่มุมจอ
+
+                title.textContent = "VICTORY"; 
+                title.style.color = "#ff9d00";
                 
-                sub.textContent = `+${currentReward} COINS`;
+                // แสดงผลลัพธ์การคำนวณ
+                sub.innerHTML = `HP LEFT: ${playerCurrentHP} <br> REWARD: <span style="color:#00eaff; font-size:1.5rem;">+${reward} COINS</span>`;
                 
-                btn.textContent = "HUNT MORE";
+                btn.textContent = "COLLECT & HUNT";
                 btn.className = "main-btn";
-                // 🔹 แก้ไข: รีเลือด + ไปหน้า Map
                 btn.onclick = () => {
-                    playerCurrentHP = playerMaxHP; 
+                    // รีเซ็ตเลือดกลับเป็นค่าปกติ (20) สำหรับรอบหน้า
+                    playerMaxHP = 20;
+                    playerCurrentHP = 20; 
                     nav('map');
                 };
                 modal.style.display = 'flex';
                 playSfx('win');
 
             } else if (playerCurrentHP <= 0) {
-                // LOSE
-                title.textContent = "DEFEATED"; title.style.color = "red";
-                sub.textContent = "YOU LOSE...";
+                // --- LOSE (แพ้) ---
+                // สูตร: เสียเงินเท่ากับ MaxHP ของรอบนั้น (ปกติ 20, Sudden Death 10)
+                let penalty = playerMaxHP;
+
+                playerWLD -= penalty; // หักเงิน
+                updateBalance();      // อัปเดตตัวเลขเงินที่มุมจอ
+
+                title.textContent = "DEFEATED"; 
+                title.style.color = "red";
+                
+                sub.innerHTML = `YOU DIED... <br> LOST: <span style="color:red; font-size:1.5rem;">-${penalty} COINS</span>`;
+                
                 btn.textContent = "TRY AGAIN";
                 btn.className = "main-btn";
-                // 🔹 แก้ไข: รีเลือด + ไปหน้า Map
                 btn.onclick = () => {
-                    playerCurrentHP = playerMaxHP;
+                    // รีเซ็ตเลือดกลับเป็นค่าปกติ (20)
+                    playerMaxHP = 20;
+                    playerCurrentHP = 20;
                     nav('map');
                 }; 
                 modal.style.display = 'flex';
 
             } else {
-                // NEXT ROUND
+                // --- ยังไม่จบ (NEXT ROUND) ---
                 const btnAction = document.getElementById('actionBtn');
-                btnAction.textContent = "NEXT ROUND"; btnAction.disabled = false; btnAction.classList.remove('attack');
+                btnAction.textContent = "NEXT ROUND"; 
+                btnAction.disabled = false; 
+                btnAction.classList.remove('attack');
                 btnAction.onclick = initBattleState;
             }
         }
 
+       
         // Start
         initMap();
 
