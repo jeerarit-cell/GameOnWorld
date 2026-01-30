@@ -313,7 +313,7 @@
 
     <script>
       // --- 1. GLOBAL RPG VARIABLES ---
-    let playerWLD = 100.00;
+    let playerCOIN = 100.00;
     let playerMaxHP = 28;     
     let playerCurrentHP = 28; 
 
@@ -386,7 +386,7 @@
     }
 
     // --- 4. RPG UI LOGIC ---
-    function updateBalance() { document.getElementById('uiWLD').innerText = playerWLD.toFixed(2); }
+    function updateBalance() { document.getElementById('uiWLD').innerText = playerCOIN.toFixed(2); }
 
     function updateLobbyStats() {
             const elLevel = document.getElementById('uiLevel');
@@ -672,7 +672,7 @@
             const damageTaken = playerMaxHP - playerCurrentHP;
             let reward = battle_eMaxHP - damageTaken;
             if (reward < 0) reward = 0; 
-            playerWLD += reward;
+            playerCOIN += reward;
 
             // คำนวณ EXP
             let gainedEXP = expReward[currentMonsterType] || 1;
@@ -734,7 +734,7 @@
                 sub.innerHTML = `GOOD FIGHT! (ENEMY < 50%)<br>LOST: <span style="color:red; font-size:1.5rem;">-${penalty} COINS</span>`;
             }
 
-            playerWLD -= penalty;
+            playerCOIN -= penalty;
             updateBalance();
 
             title.textContent = "DEFEATED"; 
