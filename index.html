@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>CYBER RPG v3.0 (Reborn)</title>
+    <title>CYBER RPG v2.8 (Reborn)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;600&family=Orbitron:wght@700;900&display=swap');
 
@@ -211,11 +211,24 @@
         </div>
 
         <div id="screen-lobby" class="screen">
-            <div class="top-bar">
+           <div class="top-bar">
                 <div class="avatar"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"></div>
-                <div style="margin-left: 10px;">
-                    <div style="font-family:'Orbitron';">PLAYER_1 <span style="background:#333; padding:2px 5px; border-radius:4px; font-size:0.8rem;">LV.1</span></div>
-                    <div style="font-size: 0.9rem;"><span style="color:var(--neon-orange)" id="uiWLD">100.00</span> WLD</div>
+                <div style="margin-left: 12px; display: flex; flex-direction: column; justify-content: center; min-width: 140px;">
+                    
+                    <div style="font-family:'Orbitron'; font-size: 1rem; line-height: 1.2;">
+                        PLAYER_1 
+                        <span id="uiLevel" style="background:#333; padding:1px 6px; border-radius:4px; font-size:0.7rem; color:#00eaff; vertical-align: middle;">LV.1</span>
+                    </div>
+
+                    <div style="font-size: 0.75rem; margin: 3px 0; white-space: nowrap;">
+                        <span style="color:#ff2a2a; font-weight:bold;">❤ <span id="uiLobbyHP">20/20</span></span>
+                        <span style="color:#444; margin: 0 4px;">|</span>
+                        <span id="uiExp" style="color:#888;">0/150 XP</span>
+                    </div>
+
+                    <div style="font-size: 0.9rem; line-height: 1;">
+                        <span style="color:var(--neon-orange); font-weight:bold;" id="uiWLD">100.00</span> WLD
+                    </div>
                 </div>
             </div>
             
@@ -299,373 +312,454 @@
     </div>
 
     <script>
-        // --- 1. GLOBAL RPG VARIABLES ---
-        let playerWLD = 100.00;
-        let playerMaxHP = 20;
-        let playerCurrentHP = 20;
+      // --- 1. GLOBAL RPG VARIABLES ---
+    let playerWLD = 100.00;
+    let playerMaxHP = 28;     
+    let playerCurrentHP = 28; 
 
-        // --- 2. MONSTER DATABASE ---
-        const monsterDB = [
-            { id: 1, name: "Duck Fighter",    hp: 20,  type: "common",   loc: "Sewers",  img: "333", url:"https://images.unsplash.com/photo-1459682687441-7761439a709d?q=80&w=500&auto=format&fit=crop" },
-            { id: 2, name: "Dog Fighter",   hp: 20,  type: "common",   loc: "Sewers",  img: "333", url:"https://github.com/user-attachments/assets/4740cb53-19dd-4186-9c7f-d8af3e3aaddb" },
-            { id: 3, name: "Scorpion Fighter",   hp: 20,  type: "common",   loc: "Digital", img: "333", url:"https://github.com/user-attachments/assets/43953afd-66b6-4ae5-83b9-6121ba7ff05d" },
-            { id: 4, name: "Rabbit Fighter",   hp: 20,  type: "common",   loc: "Digital", img: "333", url:"https://github.com/user-attachments/assets/912e9583-da84-4f1a-adce-e9fe5ae54490" },
-            { id: 5, name: "Wolf Fighter",   hp: 20,  type: "common",   loc: "Digital", img: "333", url:"https://github.com/user-attachments/assets/8e3523b7-7ed7-4d27-b6cf-2f10373738e9" },
-            { id: 6, name: "Fire Gobin",  hp: 30,  type: "miniboss", loc: "Factory", img: "0044cc", url:"https://github.com/user-attachments/assets/8a354949-f700-4d7e-9ff4-dd5b90164296" }, 
-            { id: 7, name: "THE OVERLORD", hp: 40,  type: "boss",    loc: "Tower",   img: "990000", url:"https://github.com/user-attachments/assets/6dec1453-a3f9-4b8f-8499-ac45bd42da29" },
-            { id: 8, name: "GOLDEN DRAGON", hp: 50,  type: "legendary",   loc: "Sky Realm",   img: "gold", url:"https://github.com/user-attachments/assets/b8379da1-b55e-4c8f-bcfb-e68eaae581ed" }
-        ];
+    // ระบบเลเวลและ EXP (ใหม่)
+    let playerLevel = 5;
+    let playerEXP = 999;
+    let currentMonsterType = 'common'; 
 
-        // --- 3. AUDIO SYSTEM ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function startGameAndAudio() {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            nav('home');
+    const levelConfig = {
+        1: { need: 150, bonus: 2 },
+        2: { need: 300, bonus: 2 },
+        3: { need: 450, bonus: 2 },
+        4: { need: 700, bonus: 2 },
+        5: { need: 1000, bonus: 2 }
+    };
+
+    const expReward = {
+        'common': 1,
+        'miniboss': 2,
+        'boss': 3,
+        'legendary': 5
+    };
+
+    // --- 2. MONSTER DATABASE ---
+    const monsterDB = [
+        { id: 1, name: "Duck Fighter",    hp: 20,  type: "common",   loc: "Sewers",  url:"https://images.unsplash.com/photo-1459682687441-7761439a709d?q=80&w=500" },
+        { id: 2, name: "Dog Fighter",   hp: 20,  type: "common",   loc: "Sewers",  url:"https://github.com/user-attachments/assets/4740cb53-19dd-4186-9c7f-d8af3e3aaddb" },
+        { id: 3, name: "Scorpion Fighter",   hp: 20,  type: "common",   loc: "Digital", url:"https://github.com/user-attachments/assets/43953afd-66b6-4ae5-83b9-6121ba7ff05d" },
+        { id: 4, name: "Rabbit Fighter",   hp: 20,  type: "common",   loc: "Digital", url:"https://github.com/user-attachments/assets/912e9583-da84-4f1a-adce-e9fe5ae54490" },
+        { id: 5, name: "Wolf Fighter",   hp: 20,  type: "common",   loc: "Digital", url:"https://github.com/user-attachments/assets/8e3523b7-7ed7-4d27-b6cf-2f10373738e9" },
+        { id: 6, name: "Fire Gobin",  hp: 30,  type: "miniboss", loc: "Factory", url:"https://github.com/user-attachments/assets/8a354949-f700-4d7e-9ff4-dd5b90164296" }, 
+        { id: 7, name: "THE OVERLORD", hp: 40,  type: "boss",    loc: "Tower",   url:"https://github.com/user-attachments/assets/6dec1453-a3f9-4b8f-8499-ac45bd42da29" },
+        { id: 8, name: "GOLDEN DRAGON", hp: 50,  type: "legendary",   loc: "Sky Realm",   url:"https://github.com/user-attachments/assets/b8379da1-b55e-4c8f-bcfb-e68eaae581ed" }
+    ];
+
+    // --- 3. AUDIO SYSTEM ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function startGameAndAudio() {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        updateLobbyStats(); // อัปเดต UI เลเวลตอนเริ่ม
+        nav('home');
+    }
+
+    function playSfx(type) {
+        if(audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
+        osc.connect(gain); gain.connect(audioCtx.destination);
+
+        if (type === 'click') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'place') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now);
+            gain.gain.setValueAtTime(0.5, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.start(now); osc.stop(now + 0.1);
+        } else if (type === 'hit') {
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
+            osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
+            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
+            osc.start(now); osc.stop(now + 0.4);
+        } else if (type === 'win') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2);
+            gain.gain.setValueAtTime(0.9, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(now); osc.stop(now + 0.5);
         }
+    }
 
-        function playSfx(type) {
-            if(audioCtx.state === 'suspended') audioCtx.resume();
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            const now = audioCtx.currentTime;
-            osc.connect(gain); gain.connect(audioCtx.destination);
+    // --- 4. RPG UI LOGIC ---
+    function updateBalance() { document.getElementById('uiWLD').innerText = playerWLD.toFixed(2); }
 
-            if (type === 'click') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
-                gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'place') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(200, now);
-                gain.gain.setValueAtTime(0.5, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            } else if (type === 'hit') {
-                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
-                osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
-                gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-                osc.start(now); osc.stop(now + 0.4);
-            } else if (type === 'win') {
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2);
-                gain.gain.setValueAtTime(0.9, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
-                osc.start(now); osc.stop(now + 0.5);
-            }
-        }
+    function updateLobbyStats() {
+            const elLevel = document.getElementById('uiLevel');
+            const elExp = document.getElementById('uiExp');
+            const elHP = document.getElementById('uiLobbyHP');
 
-        // --- 4. RPG UI LOGIC ---
-        function updateBalance() { document.getElementById('uiWLD').innerText = playerWLD.toFixed(2); }
-        
-        function nav(target) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            let screenId = 'screen-' + target;
-            if(target === 'home') screenId = 'screen-lobby';
-            const targetScreen = document.getElementById(screenId);
-            if(targetScreen) targetScreen.classList.add('active');
-
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            if(target === 'map') document.querySelector('.nav-item').classList.add('active');
-            
-            updateBalance();
-        }
-
-        // Render Map List
-        function initMap() {
-            const container = document.getElementById('monster-list-container');
-            container.innerHTML = '';
-            monsterDB.forEach(m => {
-                let cardClass = 'rank-common';
-                let badgeStyle = '';
-                let infoExtra = '';
-                if(m.type === 'miniboss') { cardClass = 'rank-miniboss'; badgeStyle = 'color:#00eaff; border-color:#00eaff;'; infoExtra = '<p style="color:#00eaff; font-size:0.7rem; font-weight:bold;">★ MINI BOSS</p>'; }
-                else if (m.type === 'boss') { cardClass = 'rank-boss'; badgeStyle = 'background:#ffd700; color:black; font-weight:bold; border:none;'; infoExtra = '<p style="color:#ffd700; font-weight:bold; font-size:0.7rem;">☠️ WORLD BOSS</p>'; }
-                else if (m.type === 'legendary') { cardClass = 'rank-legendary'; badgeStyle = 'background:white; color:#FF8C00; font-weight:900; border:none; box-shadow: 0 0 10px white;'; infoExtra = '<p style="color:white; font-weight:900; font-size:0.8rem; text-shadow: 0 1px 2px black;">👑 LEGENDARY BOSS</p>'; }
-
-                const cardHTML = `
-                    <div class="monster-card ${cardClass}" onclick="prepareBattle(${m.id})">
-                        <div style="display:flex; align-items:center;">
-                            <img src="${m.url}" class="m-avatar">
-                            <div class="m-info"><h3>${m.name}</h3>${infoExtra}<p>${m.loc} • HP: ${m.hp}</p></div>
-                        </div>
-                        <div class="hp-badge" style="${badgeStyle}">HP: ${m.hp}</div>
-                    </div>`;
-                container.innerHTML += cardHTML;
-            });
-        }
-
-        // --- 5. BATTLE SYSTEM ---
-        let battle_eMaxHP = 20;
-        let battle_eHP = 20;
-        let battle_pDeck = [], battle_eDeck = [];
-        let battle_placedCards = [null, null, null, null, null];
-        let battle_turn = 0;
-        let battle_isPlaying = false;
-        let currentReward = 0;
-
-        function prepareBattle(monsterID) {
-            const monster = monsterDB.find(m => m.id === monsterID);
-            if(!monster) return;
-
-            battle_eMaxHP = monster.hp;
-            battle_eHP = monster.hp;
-            document.getElementById('battleEnemyName').innerText = monster.name;
-            document.getElementById('bossImg').src = monster.url;
-            currentReward = Math.floor(monster.hp * 0.5);
-
-            document.getElementById('screen-battle').style.backgroundImage = "url('https://github.com/user-attachments/assets/13b147e2-f363-49ce-bd43-68530d231a60')";
-
-            nav('battle');
-            initBattleState();
-        }
-
-        function initBattleState() {
-            battle_turn = 0;
-            battle_placedCards = [null, null, null, null, null];
-            battle_isPlaying = false;
-            document.getElementById('resultModal').style.display = 'none';
-            updateBattleUI();
-            
-            const currentImg = document.getElementById('bossImg').src;
-            const cZone = document.getElementById('clashZone'); cZone.innerHTML = '';
-            for(let i=0; i<5; i++) {
-                const slot = document.createElement('div');
-                slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
-                slot.dataset.id = i;
-                cZone.appendChild(slot);
-            }
-
-            const eRow = document.getElementById('enemyCardRow'); eRow.innerHTML = '';
-            for(let i=0; i<5; i++) {
-                const wrap = document.createElement('div'); wrap.className = 'card-perspective'; wrap.id = `eWrap${i}`;
-                // *** ใช้งานหน้าบอสเป็นหลังไพ่ ตามต้นฉบับที่คุณต้องการ ***
-                wrap.innerHTML = `<div class="card-inner"><div class="card-front"style="background-image:url('${currentImg}');background-size:cover; background-position:center;"></div><div class="card-back enemy-revealed" id="eCard${i}">?</div></div>`;
-                eRow.appendChild(wrap);
-            }
-
-            battle_pDeck = [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
-            battle_eDeck = [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5); 
-            
-            const pRow = document.getElementById('playerCardRow'); pRow.innerHTML = '';
-            battle_pDeck.forEach((val) => {
-                const card = document.createElement('div');
-                card.className = 'my-card';
-                card.textContent = val;
-                card.onclick = () => selectCardAction(val, card);
-                pRow.appendChild(card);
-            });
-
-            const btn = document.getElementById('actionBtn');
-            btn.textContent = "SELECT CARDS"; btn.disabled = true; btn.className = 'main-btn';
-            btn.onclick = null;
-            playSfx('place');
-        }
-
-        function selectCardAction(val, el) {
-            if(battle_isPlaying || battle_turn >= 5 || el.classList.contains('used')) return;
-
-            battle_placedCards[battle_turn] = val;
-            playSfx('click');
-            
-            const slot = document.querySelector(`.clash-slot[data-id="${battle_turn}"]`);
-            slot.innerHTML = `<div>${val}</div>`;
-            slot.classList.remove('active');
-            
-            el.classList.add('used');
-            
-            battle_turn++;
-            if(battle_turn < 5) {
-                document.querySelector(`.clash-slot[data-id="${battle_turn}"]`).classList.add('active');
-            } else {
-                const btn = document.getElementById('actionBtn');
-                btn.textContent = "ATTACK !!!"; btn.disabled = false;
-                btn.classList.add('attack'); 
-                btn.onclick = runBattleSequence;
-            }
-        }
-
-        async function runBattleSequence() {
-            battle_isPlaying = true;
-            document.getElementById('actionBtn').disabled = true;
-
-            let pSurvivors = [];
-            let eSurvivors = [];
-
-            for(let i=0; i<5; i++) {
-                const eVal = battle_eDeck[i]; const pVal = battle_placedCards[i];
-                
-                const eWrap = document.getElementById(`eWrap${i}`);
-                const eBack = document.getElementById(`eCard${i}`);
-                eBack.textContent = eVal;
-                eWrap.classList.add('flipped');
-                playSfx('place');
-                
-                await new Promise(r => setTimeout(r, 600));
-
-                const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
-                const pCard = pSlot.querySelector('div');
-
-                if (pVal > eVal) {
-                    eBack.classList.add('dead-content');
-                    pCard.parentElement.classList.add('win-pulse');
-                    pSurvivors.push({val: pVal});
-                } else if (eVal > pVal) {
-                    pCard.classList.add('dead-content');
-                    eBack.classList.add('win-pulse');
-                    eSurvivors.push({val: eVal});
-                } else {
-                    eBack.classList.add('dead-content');
-                    pCard.classList.add('dead-content');
+            // เช็คว่า "ตัน" หรือยัง? (ถ้า levelConfig ไม่มีข้อมูลของเวลปัจจุบัน แปลว่าเกิน Max แล้ว)
+            // สมมติ config มีถึงเวล 5, ถ้า playerLevel เป็น 6 คือ MAX
+            if (!levelConfig[playerLevel]) {
+                // --- กรณี LEVEL MAX ---
+                if(elLevel) {
+                    elLevel.innerText = "LV.MAX";
+                    elLevel.style.color = "#ffd700"; // เปลี่ยนป้ายเป็นสีทอง
+                    elLevel.style.border = "1px solid #ffd700"; // เพิ่มขอบทอง
                 }
-                playSfx('click'); 
-                await new Promise(r => setTimeout(r, 400));
-            }
-
-            await new Promise(r => setTimeout(r, 500));
-            const pCount = pSurvivors.length;
-            const eCount = eSurvivors.length;
-
-            let dmgToEnemy = 0;
-            let dmgToPlayer = 0;
-
-            if (pCount > eCount) {
-                dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
-            } else if (eCount > pCount) {
-                dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
-            } else {
-                dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
-                dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
-            }
-
-            // Apply Damage
-            battle_eHP -= dmgToEnemy;
-            if(dmgToEnemy > 0) flashDamage('e', dmgToEnemy);
-
-            playerCurrentHP -= dmgToPlayer;
-            if(dmgToPlayer > 0) flashDamage('p', dmgToPlayer); 
-            
-            if(playerCurrentHP < 0) playerCurrentHP = 0;
-
-            updateBattleUI();
-            await new Promise(r => setTimeout(r, 1500));
-            checkBattleResult();
-        }
-
-        function flashDamage(who, amount) {
-            if(amount <= 0) return;
-            const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
-            txt.textContent = "-" + amount;
-            txt.classList.add('show');
-            playSfx('hit');
-            document.getElementById('battleArea').classList.add('shaking');
-            if(who === 'e') document.querySelector('.boss-banner').classList.add('hit');
-            
-            setTimeout(() => {
-                txt.classList.remove('show');
-                document.getElementById('battleArea').classList.remove('shaking');
-                document.querySelector('.boss-banner').classList.remove('hit');
-            }, 800);
-        }
-
-        function updateBattleUI() {
-            if(battle_eHP < 0) battle_eHP = 0;
-            document.getElementById('enemyHpBar').style.width = (battle_eHP/battle_eMaxHP)*100 + "%";
-            document.getElementById('enemyHpText').textContent = battle_eHP + "/" + battle_eMaxHP;
-            document.getElementById('playerHpBar').style.width = (playerCurrentHP/playerMaxHP)*100 + "%";
-            document.getElementById('playerHpText').textContent = playerCurrentHP + "/" + playerMaxHP;
-        }
-      
-        // (ข้อ 4) จบเกมแล้วคำนวณเงินรางวัลและไปหน้า Map
-        function checkBattleResult() {
-            const modal = document.getElementById('resultModal');
-            const title = document.getElementById('resultTitle');
-            const sub = document.getElementById('resultSub');
-            const btn = document.getElementById('restartBtn');
-
-            // ⚔️ BATTLE END
-            if (battle_eHP <= 0 && playerCurrentHP <= 0) {
-                // --- SUDDEN DEATH (เสมอ) ---
-                title.textContent = "DOUBLE KO"; 
-                title.style.color = "yellow";
-                sub.innerHTML = "NO REWARD YET<br>ENTER SUDDEN DEATH MODE!";
-                
-                btn.textContent = "FIGHT FOR LIFE (10 HP)";
-                btn.className = "main-btn sudden";
-                
-                // ตั้งค่า Sudden Death (10 HP)
-                btn.onclick = () => {
-                    battle_eHP = 10; battle_eMaxHP = 10;
-                    playerCurrentHP = 10; playerMaxHP = 10;
-                    updateBattleUI(); // อัปเดตหลอดเลือดทันที
-                    initBattleState();
-                };
-                modal.style.display = 'flex';
-                playSfx('win'); // ใช้เสียง Win เพื่อกระตุ้น
-
-            } else if (battle_eHP <= 0) {
-                // --- WIN (ชนะ) ---
-                // สูตร: เลือดมอนเต็ม - (เลือดเราเต็ม - เลือดเราที่เหลือ)
-                // เช่น มอน 20 - (เรา 20 - เหลือ 1) = 20 - 19 = รางวัล 1 Coin
-                const damageTaken = playerMaxHP - playerCurrentHP;
-                let reward = battle_eMaxHP - damageTaken;
-
-                // ป้องกันรางวัลติดลบ (ชนะต้องได้อย่างน้อย 0 หรือจะให้ติดลบก็ได้ถ้าโหด)
-                if (reward < 0) reward = 0; 
-
-                playerWLD += reward; // เพิ่มเงิน
-                updateBalance();     // อัปเดตตัวเลขเงินที่มุมจอ
-
-                title.textContent = "VICTORY"; 
-                title.style.color = "#ff9d00";
-                
-                // แสดงผลลัพธ์การคำนวณ
-                sub.innerHTML = `HP LEFT: ${playerCurrentHP} <br> REWARD: <span style="color:#00eaff; font-size:1.5rem;">+${reward} COINS</span>`;
-                
-                btn.textContent = "COLLECT & HUNT";
-                btn.className = "main-btn";
-                btn.onclick = () => {
-                    // รีเซ็ตเลือดกลับเป็นค่าปกติ (20) สำหรับรอบหน้า
-                    playerMaxHP = 20;
-                    playerCurrentHP = 20; 
-                    nav('map');
-                };
-                modal.style.display = 'flex';
-                playSfx('win');
-
-            } else if (playerCurrentHP <= 0) {
-                // --- LOSE (แพ้) ---
-                // สูตร: เสียเงินเท่ากับ MaxHP ของรอบนั้น (ปกติ 20, Sudden Death 10)
-                let penalty = playerMaxHP;
-
-                playerWLD -= penalty; // หักเงิน
-                updateBalance();      // อัปเดตตัวเลขเงินที่มุมจอ
-
-                title.textContent = "DEFEATED"; 
-                title.style.color = "red";
-                
-                sub.innerHTML = `YOU DIED... <br> LOST: <span style="color:red; font-size:1.5rem;">-${penalty} COINS</span>`;
-                
-                btn.textContent = "TRY AGAIN";
-                btn.className = "main-btn";
-                btn.onclick = () => {
-                    // รีเซ็ตเลือดกลับเป็นค่าปกติ (20)
-                    playerMaxHP = 20;
-                    playerCurrentHP = 20;
-                    nav('map');
-                }; 
-                modal.style.display = 'flex';
+                // แสดง EXP แบบขีดตามที่ขอ
+                if(elExp) elExp.innerText = "----/---- EXP";
 
             } else {
-                // --- ยังไม่จบ (NEXT ROUND) ---
-                const btnAction = document.getElementById('actionBtn');
-                btnAction.textContent = "NEXT ROUND"; 
-                btnAction.disabled = false; 
-                btnAction.classList.remove('attack');
-                btnAction.onclick = initBattleState;
+                // --- กรณีเลเวลปกติ (1-5) ---
+                if(elLevel) {
+                    elLevel.innerText = "LV." + playerLevel;
+                    elLevel.style.color = "#00eaff"; // สีฟ้าปกติ
+                    elLevel.style.border = "none";
+                }
+                // แสดง EXP ปัจจุบัน / เป้าหมาย
+                if(elExp) {
+                    const nextNeed = levelConfig[playerLevel].need;
+                    elExp.innerText = `${playerEXP}/${nextNeed} XP`;
+                }
+            }
+
+            // อัปเดต HP (โชว์ 30/30 ตอน Max)
+            if(elHP) {
+                elHP.innerText = `${playerCurrentHP}/${playerMaxHP}`;
             }
         }
+    
+    function nav(target) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        let screenId = 'screen-' + target;
+        if(target === 'home') screenId = 'screen-lobby';
+        const targetScreen = document.getElementById(screenId);
+        if(targetScreen) targetScreen.classList.add('active');
 
-       
-        // Start
-        initMap();
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        if(target === 'map') document.querySelector('.nav-item').classList.add('active');
+        
+        updateBalance();
+        updateLobbyStats();
+    }
 
+    // Render Map List
+    function initMap() {
+        const container = document.getElementById('monster-list-container');
+        container.innerHTML = '';
+        monsterDB.forEach(m => {
+            let cardClass = 'rank-common';
+            let badgeStyle = '';
+            let infoExtra = '';
+            if(m.type === 'miniboss') { cardClass = 'rank-miniboss'; badgeStyle = 'color:#00eaff; border-color:#00eaff;'; infoExtra = '<p style="color:#00eaff; font-size:0.7rem; font-weight:bold;">★ MINI BOSS</p>'; }
+            else if (m.type === 'boss') { cardClass = 'rank-boss'; badgeStyle = 'background:#ffd700; color:black; font-weight:bold; border:none;'; infoExtra = '<p style="color:#ffd700; font-weight:bold; font-size:0.7rem;">☠️ WORLD BOSS</p>'; }
+            else if (m.type === 'legendary') { cardClass = 'rank-legendary'; badgeStyle = 'background:white; color:#FF8C00; font-weight:900; border:none; box-shadow: 0 0 10px white;'; infoExtra = '<p style="color:white; font-weight:900; font-size:0.8rem; text-shadow: 0 1px 2px black;">👑 LEGENDARY BOSS</p>'; }
+
+            const cardHTML = `
+                <div class="monster-card ${cardClass}" onclick="prepareBattle(${m.id})">
+                    <div style="display:flex; align-items:center;">
+                        <img src="${m.url}" class="m-avatar">
+                        <div class="m-info"><h3>${m.name}</h3>${infoExtra}<p>${m.loc} • HP: ${m.hp}</p></div>
+                    </div>
+                    <div class="hp-badge" style="${badgeStyle}">HP: ${m.hp}</div>
+                </div>`;
+            container.innerHTML += cardHTML;
+        });
+    }
+
+    // --- 5. BATTLE SYSTEM ---
+    let battle_eMaxHP = 20;
+    let battle_eHP = 20;
+    let battle_pDeck = [], battle_eDeck = [];
+    let battle_placedCards = [null, null, null, null, null];
+    let battle_turn = 0;
+    let battle_isPlaying = false;
+    let currentReward = 0;
+
+    function prepareBattle(monsterID) {
+        const monster = monsterDB.find(m => m.id === monsterID);
+        if(!monster) return;
+
+        currentMonsterType = monster.type; // จำประเภทมอนสเตอร์
+        battle_eMaxHP = monster.hp;
+        battle_eHP = monster.hp;
+        document.getElementById('battleEnemyName').innerText = monster.name;
+        document.getElementById('bossImg').src = monster.url;
+        currentReward = Math.floor(monster.hp * 0.5);
+
+        document.getElementById('screen-battle').style.backgroundImage = "url('https://github.com/user-attachments/assets/13b147e2-f363-49ce-bd43-68530d231a60')";
+
+        nav('battle');
+        initBattleState();
+    }
+
+    function initBattleState() {
+        battle_turn = 0;
+        battle_placedCards = [null, null, null, null, null];
+        battle_isPlaying = false;
+        document.getElementById('resultModal').style.display = 'none';
+        updateBattleUI();
+        
+        const currentImg = document.getElementById('bossImg').src;
+        const cZone = document.getElementById('clashZone'); cZone.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            const slot = document.createElement('div');
+            slot.className = i===0 ? 'clash-slot active' : 'clash-slot';
+            slot.dataset.id = i;
+            cZone.appendChild(slot);
+        }
+
+        const eRow = document.getElementById('enemyCardRow'); eRow.innerHTML = '';
+        for(let i=0; i<5; i++) {
+            const wrap = document.createElement('div'); wrap.className = 'card-perspective'; wrap.id = `eWrap${i}`;
+            wrap.innerHTML = `<div class="card-inner"><div class="card-front"style="background-image:url('${currentImg}');background-size:cover; background-position:center;"></div><div class="card-back enemy-revealed" id="eCard${i}">?</div></div>`;
+            eRow.appendChild(wrap);
+        }
+
+        battle_pDeck = [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5);
+        battle_eDeck = [1, 2, 3, 4, 5].sort(() => Math.random() - 0.5); 
+        
+        const pRow = document.getElementById('playerCardRow'); pRow.innerHTML = '';
+        battle_pDeck.forEach((val) => {
+            const card = document.createElement('div');
+            card.className = 'my-card';
+            card.textContent = val;
+            card.onclick = () => selectCardAction(val, card);
+            pRow.appendChild(card);
+        });
+
+        const btn = document.getElementById('actionBtn');
+        btn.textContent = "SELECT CARDS"; btn.disabled = true; btn.className = 'main-btn';
+        btn.onclick = null;
+        playSfx('place');
+    }
+
+    function selectCardAction(val, el) {
+        if(battle_isPlaying || battle_turn >= 5 || el.classList.contains('used')) return;
+
+        battle_placedCards[battle_turn] = val;
+        playSfx('click');
+        
+        const slot = document.querySelector(`.clash-slot[data-id="${battle_turn}"]`);
+        slot.innerHTML = `<div>${val}</div>`;
+        slot.classList.remove('active');
+        
+        el.classList.add('used');
+        
+        battle_turn++;
+        if(battle_turn < 5) {
+            document.querySelector(`.clash-slot[data-id="${battle_turn}"]`).classList.add('active');
+        } else {
+            const btn = document.getElementById('actionBtn');
+            btn.textContent = "ATTACK !!!"; btn.disabled = false;
+            btn.classList.add('attack'); 
+            btn.onclick = runBattleSequence;
+        }
+    }
+
+    async function runBattleSequence() {
+        battle_isPlaying = true;
+        document.getElementById('actionBtn').disabled = true;
+
+        let pSurvivors = [];
+        let eSurvivors = [];
+
+        for(let i=0; i<5; i++) {
+            const eVal = battle_eDeck[i]; const pVal = battle_placedCards[i];
+            
+            const eWrap = document.getElementById(`eWrap${i}`);
+            const eBack = document.getElementById(`eCard${i}`);
+            eBack.textContent = eVal;
+            eWrap.classList.add('flipped');
+            playSfx('place');
+            
+            await new Promise(r => setTimeout(r, 600));
+
+            const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
+            const pCard = pSlot.querySelector('div');
+
+            if (pVal > eVal) {
+                eBack.classList.add('dead-content');
+                pCard.parentElement.classList.add('win-pulse');
+                pSurvivors.push({val: pVal});
+            } else if (eVal > pVal) {
+                pCard.classList.add('dead-content');
+                eBack.classList.add('win-pulse');
+                eSurvivors.push({val: eVal});
+            } else {
+                eBack.classList.add('dead-content');
+                pCard.classList.add('dead-content');
+            }
+            playSfx('click'); 
+            await new Promise(r => setTimeout(r, 400));
+        }
+
+        await new Promise(r => setTimeout(r, 500));
+        const pCount = pSurvivors.length;
+        const eCount = eSurvivors.length;
+
+        let dmgToEnemy = 0;
+        let dmgToPlayer = 0;
+
+        if (pCount > eCount) {
+            dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
+        } else if (eCount > pCount) {
+            dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
+        } else {
+            dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
+            dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
+        }
+
+        battle_eHP -= dmgToEnemy;
+        if(dmgToEnemy > 0) flashDamage('e', dmgToEnemy);
+
+        playerCurrentHP -= dmgToPlayer;
+        if(dmgToPlayer > 0) flashDamage('p', dmgToPlayer); 
+        
+        if(playerCurrentHP < 0) playerCurrentHP = 0;
+
+        updateBattleUI();
+        await new Promise(r => setTimeout(r, 1500));
+        checkBattleResult();
+    }
+
+    function flashDamage(who, amount) {
+        if(amount <= 0) return;
+        const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
+        txt.textContent = "-" + amount;
+        txt.classList.add('show');
+        playSfx('hit');
+        document.getElementById('battleArea').classList.add('shaking');
+        if(who === 'e') document.querySelector('.boss-banner').classList.add('hit');
+        
+        setTimeout(() => {
+            txt.classList.remove('show');
+            document.getElementById('battleArea').classList.remove('shaking');
+            document.querySelector('.boss-banner').classList.remove('hit');
+        }, 800);
+    }
+
+    function updateBattleUI() {
+        if(battle_eHP < 0) battle_eHP = 0;
+        document.getElementById('enemyHpBar').style.width = (battle_eHP/battle_eMaxHP)*100 + "%";
+        document.getElementById('enemyHpText').textContent = battle_eHP + "/" + battle_eMaxHP;
+        document.getElementById('playerHpBar').style.width = (playerCurrentHP/playerMaxHP)*100 + "%";
+        document.getElementById('playerHpText').textContent = playerCurrentHP + "/" + playerMaxHP;
+    }
+
+    function checkBattleResult() {
+        const modal = document.getElementById('resultModal');
+        const title = document.getElementById('resultTitle');
+        const sub = document.getElementById('resultSub');
+        const btn = document.getElementById('restartBtn');
+
+        // ⚔️ 1. SUDDEN DEATH (ตายคู่)
+        if (battle_eHP <= 0 && playerCurrentHP <= 0) {
+            title.textContent = "DOUBLE KO"; 
+            title.style.color = "yellow";
+            sub.innerHTML = "NO REWARD YET<br>ENTER SUDDEN DEATH MODE!";
+            
+            btn.textContent = "FIGHT FOR LIFE (10 HP)";
+            btn.className = "main-btn sudden";
+            btn.onclick = () => {
+                battle_eHP = 10; battle_eMaxHP = 10;
+                playerCurrentHP = 10; playerMaxHP = 10;
+                updateBattleUI(); 
+                initBattleState();
+            };
+            modal.style.display = 'flex';
+            playSfx('win');
+
+        // ⚔️ 2. WIN (ชนะ)
+        } else if (battle_eHP <= 0) {
+            // คำนวณเงิน
+            const damageTaken = playerMaxHP - playerCurrentHP;
+            let reward = battle_eMaxHP - damageTaken;
+            if (reward < 0) reward = 0; 
+            playerWLD += reward;
+
+            // คำนวณ EXP
+            let gainedEXP = expReward[currentMonsterType] || 1;
+            playerEXP += gainedEXP;
+            
+            let levelUpText = "";
+            
+            // เช็คว่ายังมี Level ต่อไปให้อัพไหม? (ถ้าปัจจุบันเวล 5 อัพเป็น 6 ได้, แต่ 6 อัพต่อไม่ได้)
+            if (levelConfig[playerLevel]) {
+                const needed = levelConfig[playerLevel].need;
+                
+                if (playerEXP >= needed) {
+                    playerEXP -= needed; // หัก EXP
+                    playerLevel++;       // อัพเลเวล (เช่น 5 -> 6)
+                    
+                    // คำนวณ Bonus HP (ถ้าขึ้นเวล 6 แล้ว ใน config ไม่มี index 6 ให้ใช้ค่า default +2)
+                    const prevConfig = levelConfig[playerLevel-1]; 
+                    const hpBonus = prevConfig ? prevConfig.bonus : 2; 
+                    
+                    playerMaxHP += hpBonus;
+                    
+                    // เอฟเฟกต์ข้อความเวลอัพ
+                    levelUpText = `<br><span style="color:#00ff00; font-weight:bold; font-size:1.2rem;">✨ LEVEL UP! (HP +${hpBonus})</span>`;
+                    
+                    // ถ้าอัพแล้วกลายเป็นเวล 6 (MAX) ให้รีเซ็ต EXP เป็น 0 หรือปล่อยไว้ก็ได้ (เพราะหน้าจอจะโชว์ ----)
+                    if(!levelConfig[playerLevel]) {
+                         levelUpText = `<br><span style="color:#ffd700; font-weight:bold; font-size:1.2rem;">👑 MAX LEVEL REACHED!</span>`;
+                    }
+
+                    playSfx('win');
+                }
+            }
+          
+            updateLobbyStats();
+            updateBalance();     
+
+            title.textContent = "VICTORY"; 
+            title.style.color = "#ff9d00";
+            sub.innerHTML = `REWARD: <span style="color:#00eaff;">+${reward} COINS</span><br>EXP: <span style="color:#ffff00;">+${gainedEXP}</span> ${levelUpText}`;
+            
+            btn.textContent = "COLLECT & HUNT";
+            btn.className = "main-btn";
+            btn.onclick = () => {
+                playerCurrentHP = playerMaxHP; 
+                nav('map');
+            };
+            modal.style.display = 'flex';
+            playSfx('win');
+
+        // ⚔️ 3. LOSE (แพ้)
+        } else if (playerCurrentHP <= 0) {
+            let penalty = 0;
+            const halfMonsterHP = battle_eMaxHP / 2;
+            if (battle_eHP >= halfMonsterHP) {
+                penalty = playerMaxHP;
+                sub.innerHTML = `ENEMY HEALTH HIGH (${battle_eHP})<br>LOST: <span style="color:red; font-size:1.5rem;">-${penalty} COINS</span>`;
+            } else {
+                penalty = Math.floor(playerMaxHP / 2);
+                sub.innerHTML = `GOOD FIGHT! (ENEMY < 50%)<br>LOST: <span style="color:red; font-size:1.5rem;">-${penalty} COINS</span>`;
+            }
+
+            playerWLD -= penalty;
+            updateBalance();
+
+            title.textContent = "DEFEATED"; 
+            title.style.color = "red";
+            
+            btn.textContent = "TRY AGAIN";
+            btn.className = "main-btn";
+            btn.onclick = () => {
+                playerCurrentHP = playerMaxHP; 
+                nav('map');
+            }; 
+            modal.style.display = 'flex';
+
+        } else {
+            // NEXT ROUND
+            const btnAction = document.getElementById('actionBtn');
+            btnAction.textContent = "NEXT ROUND"; 
+            btnAction.disabled = false; 
+            btnAction.classList.remove('attack');
+            btnAction.onclick = initBattleState;
+        }
+    }
+
+    // Start
+    initMap();
     </script>
 </body>
 </html>
