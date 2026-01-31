@@ -372,6 +372,7 @@
 
     // เรียกโหลดเกมทันทีที่เปิดเว็บ!
     window.onload = () => {
+   localStorage.removeItem('CyberRPG_Save');
         loadGame();
         updateBalance(); // อัปเดต UI ทันที
         updateLobbyStats();
