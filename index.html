@@ -312,30 +312,26 @@
     </div>
 
     <script>
-      // --- 1. GLOBAL RPG VARIABLES ---
-    let playerCOIN = 100.00;
-    let playerMaxHP = 28;     
-    let playerCurrentHP = 28; 
+          // ==========================================
+    //  CYBER RPG SYSTEM V3.0 (Save & Auto-Fix)
+    // ==========================================
 
-    // ระบบเลเวลและ EXP (ใหม่)
+    // --- 1. GLOBAL VARIABLES ---
+    let playerCOIN = 100.00;
+    let playerMaxHP = 28;       
+    let playerCurrentHP = 28;   
+    
+    // Level System
     let playerLevel = 5;
     let playerEXP = 999;
     let currentMonsterType = 'common'; 
 
+    // Config
     const levelConfig = {
-        1: { need: 150, bonus: 2 },
-        2: { need: 300, bonus: 2 },
-        3: { need: 450, bonus: 2 },
-        4: { need: 700, bonus: 2 },
-        5: { need: 1000, bonus: 2 }
+        1: { need: 150 }, 2: { need: 300 }, 3: { need: 450 },
+        4: { need: 700 }, 5: { need: 1000 }
     };
-
-    const expReward = {
-        'common': 1,
-        'miniboss': 2,
-        'boss': 3,
-        'legendary': 5
-    };
+    const expReward = { 'common': 1, 'miniboss': 2, 'boss': 3, 'legendary': 5 };
 
     // --- 2. MONSTER DATABASE ---
     const monsterDB = [
@@ -349,13 +345,70 @@
         { id: 8, name: "GOLDEN DRAGON", hp: 50,  type: "legendary",   loc: "Sky Realm",   url:"https://github.com/user-attachments/assets/b8379da1-b55e-4c8f-bcfb-e68eaae581ed" }
     ];
 
-    // --- 3. AUDIO SYSTEM ---
+    // --- 3. SAVE / LOAD SYSTEM (หัวใจสำคัญ V3.0) ---
+    function saveGame() {
+        const gameData = {
+            coin: playerCOIN,
+            level: playerLevel,
+            exp: playerEXP,
+            hp: playerCurrentHP // เซฟเลือดปัจจุบันด้วย
+        };
+        localStorage.setItem('CyberRPG_Save', JSON.stringify(gameData));
+        console.log("Game Saved!");
+    }
+
+    function loadGame() {
+        const saved = localStorage.getItem('CyberRPG_Save');
+        if (saved) {
+            const data = JSON.parse(saved);
+            playerCOIN = parseFloat(data.coin) || 100.00;
+            playerLevel = parseInt(data.level) || 1;
+            playerEXP = parseInt(data.exp) || 0;
+            
+            // สูตรคำนวณ MaxHP อัตโนมัติ (แก้บั๊กเลือด 12)
+            // ฐาน 20 + ((Level-1) * 2)
+            playerMaxHP = 20 + ((playerLevel - 1) * 2);
+
+            // ป้องกันเลือดเกิน Max หรือตายคาเซฟ
+            playerCurrentHP = parseInt(data.hp) || playerMaxHP;
+            if(playerCurrentHP > playerMaxHP) playerCurrentHP = playerMaxHP;
+            if(playerCurrentHP <= 0) playerCurrentHP = playerMaxHP; // ถ้าตายคาเซฟ ให้เกิดใหม่เลือดเต็ม
+        }
+    }
+
+    function resetGameData() {
+        if(confirm("ลบเซฟเริ่มใหม่? (Delete Save?)")) {
+            localStorage.removeItem('CyberRPG_Save');
+            location.reload();
+        }
+    }
+
+    // --- 4. STARTUP & AUDIO ---
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
     function startGameAndAudio() {
         if(audioCtx.state === 'suspended') audioCtx.resume();
-        updateLobbyStats(); // อัปเดต UI เลเวลตอนเริ่ม
+        // เพิ่มปุ่ม Reset เล็กๆ มุมขวาบน (เผื่ออยากลบเซฟ)
+        if(!document.getElementById('btnReset')) {
+            const rBtn = document.createElement('button');
+            rBtn.id = 'btnReset';
+            rBtn.innerText = "🗑️ RESET";
+            rBtn.style.cssText = "position:absolute; top:10px; right:10px; z-index:2000; background:red; color:white; border:none; padding:5px; font-size:0.6rem; cursor:pointer;";
+            rBtn.onclick = resetGameData;
+            document.body.appendChild(rBtn);
+        }
+
+        updateLobbyStats();
+        updateBalance();
         nav('home');
     }
+
+    // โหลดเกมทันทีที่เปิดหน้านี้
+    window.onload = () => {
+        loadGame();
+        updateLobbyStats();
+        updateBalance();
+    };
 
     function playSfx(type) {
         if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -363,67 +416,51 @@
         const gain = audioCtx.createGain();
         const now = audioCtx.currentTime;
         osc.connect(gain); gain.connect(audioCtx.destination);
-
+        
         if (type === 'click') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(800, now);
-            gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            osc.frequency.setValueAtTime(800, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
         } else if (type === 'place') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now);
-            gain.gain.setValueAtTime(0.5, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(now); osc.stop(now + 0.1);
+            osc.frequency.setValueAtTime(200, now); gain.gain.linearRampToValueAtTime(0, now + 0.1);
         } else if (type === 'hit') {
-            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now);
-            osc.frequency.exponentialRampToValueAtTime(10, now + 0.4);
-            gain.gain.setValueAtTime(0.3, now); gain.gain.linearRampToValueAtTime(0, now + 0.4);
-            osc.start(now); osc.stop(now + 0.4);
+            osc.type = 'sawtooth'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(10, now + 0.4); gain.gain.linearRampToValueAtTime(0, now + 0.4);
         } else if (type === 'win') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); osc.frequency.setValueAtTime(659, now + 0.2);
-            gain.gain.setValueAtTime(0.9, now); gain.gain.linearRampToValueAtTime(0, now + 0.5);
-            osc.start(now); osc.stop(now + 0.5);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(440, now); osc.frequency.setValueAtTime(554, now + 0.1); gain.gain.linearRampToValueAtTime(0, now + 0.5);
         }
+        osc.start(now); osc.stop(now + 0.5);
     }
 
-    // --- 4. RPG UI LOGIC ---
-    function updateBalance() { document.getElementById('uiWLD').innerText = playerCOIN.toFixed(2); }
+    // --- 5. UI LOGIC ---
+    function updateBalance() { 
+        const el = document.getElementById('uiWLD');
+        if(el) el.innerText = playerCOIN.toFixed(2); 
+    }
 
     function updateLobbyStats() {
-            const elLevel = document.getElementById('uiLevel');
-            const elExp = document.getElementById('uiExp');
-            const elHP = document.getElementById('uiLobbyHP');
+        const elLevel = document.getElementById('uiLevel');
+        const elExp = document.getElementById('uiExp');
+        const elHP = document.getElementById('uiLobbyHP');
 
-            // เช็คว่า "ตัน" หรือยัง? (ถ้า levelConfig ไม่มีข้อมูลของเวลปัจจุบัน แปลว่าเกิน Max แล้ว)
-            // สมมติ config มีถึงเวล 5, ถ้า playerLevel เป็น 6 คือ MAX
-            if (!levelConfig[playerLevel]) {
-                // --- กรณี LEVEL MAX ---
-                if(elLevel) {
-                    elLevel.innerText = "LV.MAX";
-                    elLevel.style.color = "#ffd700"; // เปลี่ยนป้ายเป็นสีทอง
-                    elLevel.style.border = "1px solid #ffd700"; // เพิ่มขอบทอง
-                }
-                // แสดง EXP แบบขีดตามที่ขอ
-                if(elExp) elExp.innerText = "----/---- EXP";
-
-            } else {
-                // --- กรณีเลเวลปกติ (1-5) ---
-                if(elLevel) {
-                    elLevel.innerText = "LV." + playerLevel;
-                    elLevel.style.color = "#00eaff"; // สีฟ้าปกติ
-                    elLevel.style.border = "none";
-                }
-                // แสดง EXP ปัจจุบัน / เป้าหมาย
-                if(elExp) {
-                    const nextNeed = levelConfig[playerLevel].need;
-                    elExp.innerText = `${playerEXP}/${nextNeed} XP`;
-                }
+        // Check Logic: Max Level
+        if (!levelConfig[playerLevel]) {
+            if(elLevel) {
+                elLevel.innerText = "LV.MAX";
+                elLevel.style.color = "#ffd700"; 
+                elLevel.style.border = "1px solid #ffd700";
             }
-
-            // อัปเดต HP (โชว์ 30/30 ตอน Max)
-            if(elHP) {
-                elHP.innerText = `${playerCurrentHP}/${playerMaxHP}`;
+            if(elExp) elExp.innerText = "----/---- XP";
+        } else {
+            if(elLevel) {
+                elLevel.innerText = "LV." + playerLevel;
+                elLevel.style.color = "#00eaff"; 
+                elLevel.style.border = "none";
+            }
+            if(elExp) {
+                const nextNeed = levelConfig[playerLevel].need;
+                elExp.innerText = `${playerEXP}/${nextNeed} XP`;
             }
         }
+        if(elHP) elHP.innerText = `${playerCurrentHP}/${playerMaxHP}`;
+    }
     
     function nav(target) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -439,9 +476,9 @@
         updateLobbyStats();
     }
 
-    // Render Map List
     function initMap() {
         const container = document.getElementById('monster-list-container');
+        if(!container) return;
         container.innerHTML = '';
         monsterDB.forEach(m => {
             let cardClass = 'rank-common';
@@ -463,25 +500,23 @@
         });
     }
 
-    // --- 5. BATTLE SYSTEM ---
+    // --- 6. BATTLE SYSTEM ---
     let battle_eMaxHP = 20;
     let battle_eHP = 20;
     let battle_pDeck = [], battle_eDeck = [];
     let battle_placedCards = [null, null, null, null, null];
     let battle_turn = 0;
     let battle_isPlaying = false;
-    let currentReward = 0;
 
     function prepareBattle(monsterID) {
         const monster = monsterDB.find(m => m.id === monsterID);
         if(!monster) return;
 
-        currentMonsterType = monster.type; // จำประเภทมอนสเตอร์
+        currentMonsterType = monster.type;
         battle_eMaxHP = monster.hp;
         battle_eHP = monster.hp;
         document.getElementById('battleEnemyName').innerText = monster.name;
         document.getElementById('bossImg').src = monster.url;
-        currentReward = Math.floor(monster.hp * 0.5);
 
         document.getElementById('screen-battle').style.backgroundImage = "url('https://github.com/user-attachments/assets/13b147e2-f363-49ce-bd43-68530d231a60')";
 
@@ -532,14 +567,12 @@
 
     function selectCardAction(val, el) {
         if(battle_isPlaying || battle_turn >= 5 || el.classList.contains('used')) return;
-
         battle_placedCards[battle_turn] = val;
         playSfx('click');
         
         const slot = document.querySelector(`.clash-slot[data-id="${battle_turn}"]`);
         slot.innerHTML = `<div>${val}</div>`;
         slot.classList.remove('active');
-        
         el.classList.add('used');
         
         battle_turn++;
@@ -556,62 +589,40 @@
     async function runBattleSequence() {
         battle_isPlaying = true;
         document.getElementById('actionBtn').disabled = true;
-
-        let pSurvivors = [];
-        let eSurvivors = [];
+        let pSurvivors = []; let eSurvivors = [];
 
         for(let i=0; i<5; i++) {
             const eVal = battle_eDeck[i]; const pVal = battle_placedCards[i];
-            
             const eWrap = document.getElementById(`eWrap${i}`);
             const eBack = document.getElementById(`eCard${i}`);
-            eBack.textContent = eVal;
-            eWrap.classList.add('flipped');
+            eBack.textContent = eVal; eWrap.classList.add('flipped');
             playSfx('place');
-            
             await new Promise(r => setTimeout(r, 600));
 
             const pSlot = document.querySelector(`.clash-slot[data-id="${i}"]`);
             const pCard = pSlot.querySelector('div');
 
             if (pVal > eVal) {
-                eBack.classList.add('dead-content');
-                pCard.parentElement.classList.add('win-pulse');
-                pSurvivors.push({val: pVal});
+                eBack.classList.add('dead-content'); pCard.parentElement.classList.add('win-pulse'); pSurvivors.push({val: pVal});
             } else if (eVal > pVal) {
-                pCard.classList.add('dead-content');
-                eBack.classList.add('win-pulse');
-                eSurvivors.push({val: eVal});
+                pCard.classList.add('dead-content'); eBack.classList.add('win-pulse'); eSurvivors.push({val: eVal});
             } else {
-                eBack.classList.add('dead-content');
-                pCard.classList.add('dead-content');
+                eBack.classList.add('dead-content'); pCard.classList.add('dead-content');
             }
             playSfx('click'); 
             await new Promise(r => setTimeout(r, 400));
         }
 
         await new Promise(r => setTimeout(r, 500));
-        const pCount = pSurvivors.length;
-        const eCount = eSurvivors.length;
+        const pCount = pSurvivors.length; const eCount = eSurvivors.length;
+        let dmgToEnemy = 0; let dmgToPlayer = 0;
 
-        let dmgToEnemy = 0;
-        let dmgToPlayer = 0;
+        if (pCount > eCount) dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
+        else if (eCount > pCount) dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
+        else { dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0); dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0); }
 
-        if (pCount > eCount) {
-            dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
-        } else if (eCount > pCount) {
-            dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
-        } else {
-            dmgToEnemy = pSurvivors.reduce((a, b) => a + b.val, 0);
-            dmgToPlayer = eSurvivors.reduce((a, b) => a + b.val, 0);
-        }
-
-        battle_eHP -= dmgToEnemy;
-        if(dmgToEnemy > 0) flashDamage('e', dmgToEnemy);
-
-        playerCurrentHP -= dmgToPlayer;
-        if(dmgToPlayer > 0) flashDamage('p', dmgToPlayer); 
-        
+        battle_eHP -= dmgToEnemy; if(dmgToEnemy > 0) flashDamage('e', dmgToEnemy);
+        playerCurrentHP -= dmgToPlayer; if(dmgToPlayer > 0) flashDamage('p', dmgToPlayer); 
         if(playerCurrentHP < 0) playerCurrentHP = 0;
 
         updateBattleUI();
@@ -622,12 +633,10 @@
     function flashDamage(who, amount) {
         if(amount <= 0) return;
         const txt = document.getElementById(who === 'e' ? 'eDmgText' : 'pDmgText');
-        txt.textContent = "-" + amount;
-        txt.classList.add('show');
+        txt.textContent = "-" + amount; txt.classList.add('show');
         playSfx('hit');
         document.getElementById('battleArea').classList.add('shaking');
         if(who === 'e') document.querySelector('.boss-banner').classList.add('hit');
-        
         setTimeout(() => {
             txt.classList.remove('show');
             document.getElementById('battleArea').classList.remove('shaking');
@@ -643,13 +652,14 @@
         document.getElementById('playerHpText').textContent = playerCurrentHP + "/" + playerMaxHP;
     }
 
+    // --- 7. CORE LOGIC (Reward & Punishment) ---
     function checkBattleResult() {
         const modal = document.getElementById('resultModal');
         const title = document.getElementById('resultTitle');
         const sub = document.getElementById('resultSub');
         const btn = document.getElementById('restartBtn');
 
-        // ⚔️ 1. SUDDEN DEATH (ตายคู่)
+        // CASE 1: SUDDEN DEATH
         if (battle_eHP <= 0 && playerCurrentHP <= 0) {
             title.textContent = "DOUBLE KO"; 
             title.style.color = "yellow";
@@ -660,52 +670,47 @@
             btn.onclick = () => {
                 battle_eHP = 10; battle_eMaxHP = 10;
                 playerCurrentHP = 10; playerMaxHP = 10;
+                // ไม่เซฟตอน Sudden Death เพราะเลือดยังไม่ปกติ
                 updateBattleUI(); 
                 initBattleState();
             };
             modal.style.display = 'flex';
             playSfx('win');
 
-        // ⚔️ 2. WIN (ชนะ)
+        // CASE 2: WIN
         } else if (battle_eHP <= 0) {
-            // คำนวณเงิน
             const damageTaken = playerMaxHP - playerCurrentHP;
             let reward = battle_eMaxHP - damageTaken;
-            if (reward < 0) reward = 0; 
-            playerCOIN += reward;
+            if (reward <= 0) reward = 1; // การันตีรางวัลขั้นต่ำ 1
 
-            // คำนวณ EXP
+            playerCOIN += reward; 
+
+            // EXP Logic
             let gainedEXP = expReward[currentMonsterType] || 1;
             playerEXP += gainedEXP;
             
             let levelUpText = "";
-            
-            // เช็คว่ายังมี Level ต่อไปให้อัพไหม? (ถ้าปัจจุบันเวล 5 อัพเป็น 6 ได้, แต่ 6 อัพต่อไม่ได้)
             if (levelConfig[playerLevel]) {
                 const needed = levelConfig[playerLevel].need;
-                
                 if (playerEXP >= needed) {
-                    playerEXP -= needed; // หัก EXP
-                    playerLevel++;       // อัพเลเวล (เช่น 5 -> 6)
+                    playerEXP -= needed;
+                    playerLevel++; 
+                    // สูตรใหม่: คำนวณ HP ตามเลเวล (แก้บั๊กเลือด 12 ถาวร)
+                    playerMaxHP = 20 + ((playerLevel - 1) * 2);
+                    playerCurrentHP = playerMaxHP; // เวลอัพเลือดเต็ม
                     
-                    // คำนวณ Bonus HP (ถ้าขึ้นเวล 6 แล้ว ใน config ไม่มี index 6 ให้ใช้ค่า default +2)
-                    const prevConfig = levelConfig[playerLevel-1]; 
-                    const hpBonus = prevConfig ? prevConfig.bonus : 2; 
+                    levelUpText = `<br><span style="color:#00ff00; font-weight:bold; font-size:1.2rem;">✨ LEVEL UP! (HP ${playerMaxHP})</span>`;
                     
-                    playerMaxHP += hpBonus;
-                    
-                    // เอฟเฟกต์ข้อความเวลอัพ
-                    levelUpText = `<br><span style="color:#00ff00; font-weight:bold; font-size:1.2rem;">✨ LEVEL UP! (HP +${hpBonus})</span>`;
-                    
-                    // ถ้าอัพแล้วกลายเป็นเวล 6 (MAX) ให้รีเซ็ต EXP เป็น 0 หรือปล่อยไว้ก็ได้ (เพราะหน้าจอจะโชว์ ----)
                     if(!levelConfig[playerLevel]) {
-                         levelUpText = `<br><span style="color:#ffd700; font-weight:bold; font-size:1.2rem;">👑 MAX LEVEL REACHED!</span>`;
+                        levelUpText = `<br><span style="color:#ffd700; font-weight:bold; font-size:1.2rem;">👑 MAX LEVEL REACHED!</span>`;
                     }
-
                     playSfx('win');
                 }
             }
-          
+
+            // คำนวณเสร็จปุ๊บ SAVE ปั๊บ
+            saveGame();
+
             updateLobbyStats();
             updateBalance();     
 
@@ -716,16 +721,20 @@
             btn.textContent = "COLLECT & HUNT";
             btn.className = "main-btn";
             btn.onclick = () => {
+                // ถ้าเพิ่งจบ Sudden Death ให้คืนค่าเลือดตาม Level ก่อนกลับ Lobby
+                playerMaxHP = 20 + ((playerLevel - 1) * 2); 
                 playerCurrentHP = playerMaxHP; 
+                saveGame(); // เซฟอีกทีเพื่อความชัวร์
                 nav('map');
             };
             modal.style.display = 'flex';
             playSfx('win');
 
-        // ⚔️ 3. LOSE (แพ้)
+        // CASE 3: LOSE
         } else if (playerCurrentHP <= 0) {
             let penalty = 0;
             const halfMonsterHP = battle_eMaxHP / 2;
+            
             if (battle_eHP >= halfMonsterHP) {
                 penalty = playerMaxHP;
                 sub.innerHTML = `ENEMY HEALTH HIGH (${battle_eHP})<br>LOST: <span style="color:red; font-size:1.5rem;">-${penalty} COINS</span>`;
@@ -735,6 +744,12 @@
             }
 
             playerCOIN -= penalty;
+            
+            // จบเกมแล้วคืนค่า MaxHP ให้เป็นปกติ (แก้บั๊ก Sudden Death)
+            playerMaxHP = 20 + ((playerLevel - 1) * 2);
+
+            saveGame(); // แพ้ก็ต้องเซฟ
+
             updateBalance();
 
             title.textContent = "DEFEATED"; 
@@ -757,6 +772,10 @@
             btnAction.onclick = initBattleState;
         }
     }
+
+    // Start Game
+    initMap();
+
 
     // Start
     initMap();
